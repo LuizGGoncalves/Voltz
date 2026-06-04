@@ -136,6 +136,18 @@ class ClienteService(
         clienteRepository.findUltimos20(PageRequest.of(0, 20, Sort.by(Sort.Direction.DESC, "createdAt")))
 
     @Transactional
+    fun corrigirDocumento(id: Long, novoDocumento: String): Cliente {
+        val cliente = clienteRepository.findByIdWithUCs(id)
+            .orElseThrow { ClienteNaoEncontradoException(id) }
+        val documento = validarDocumento(novoDocumento)
+        if (cliente.documento?.valor != documento.valor) {
+            validarDocumentoUnico(documento.valor)
+        }
+        cliente.documento = documento
+        return clienteRepository.save(cliente)
+    }
+
+    @Transactional
     fun inativar(id: Long) {
         val cliente = buscarOuFalhar(id)
         clienteRepository.delete(cliente)

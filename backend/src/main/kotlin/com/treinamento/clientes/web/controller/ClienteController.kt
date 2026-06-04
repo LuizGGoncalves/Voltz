@@ -4,6 +4,7 @@ import com.treinamento.clientes.service.ClienteService
 import com.treinamento.clientes.web.dto.ClienteRequest
 import com.treinamento.clientes.web.dto.ClienteResumoResponse
 import com.treinamento.clientes.web.dto.ClienteResponse
+import com.treinamento.clientes.web.dto.CorrecaoDocumentoRequest
 import com.treinamento.clientes.web.mapper.toResponse
 import com.treinamento.clientes.web.mapper.toResumoResponse
 import jakarta.validation.Valid
@@ -52,6 +53,15 @@ class ClienteController(private val clienteService: ClienteService) {
     fun ultimos20(): ResponseEntity<Page<ClienteResumoResponse>> {
         val page = clienteService.ultimos20().map { it.toResumoResponse() }
         return ResponseEntity.ok(page)
+    }
+
+    @PatchMapping("/{id}/documento")
+    fun corrigirDocumento(
+        @PathVariable id: Long,
+        @Valid @RequestBody request: CorrecaoDocumentoRequest
+    ): ResponseEntity<ClienteResponse> {
+        val cliente = clienteService.corrigirDocumento(id, request.documento)
+        return ResponseEntity.ok(cliente.toResponse())
     }
 
     @DeleteMapping("/{id}")
