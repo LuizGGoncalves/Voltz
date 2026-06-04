@@ -38,109 +38,83 @@ class ClienteServiceTest {
     private fun enderecoSp() = Endereco("01001000", "Praça da Sé", "1", null, "Sé", "São Paulo", "SP")
     private fun enderecoRj() = Endereco("20040020", "Av. Rio Branco", "1", null, "Centro", "Rio de Janeiro", "RJ")
 
-    private fun criarRequest(endUc: String = "30140071") = ClienteRequest(
-        nome = "Teste",
-        documento = "39053344705",
-        endereco = EnderecoRequest("30140071", "1", null),
-        unidadesConsumidoras = listOf(
-            UnidadeConsumidoraRequest("UC1", "INST001", EnderecoRequest(endUc, "1", null))
-        )
-    )
+    private fun criarCliente(ucEndereco: Endereco, ucNome: String = "UC", ucInstalacao: String = "INST001"): Cliente {
+        val cliente = Cliente()
+        cliente.nome = "Teste"
+        cliente.documento = Documento.of("39053344705")
+        cliente.endereco = enderecoMg()
+
+        val uc = UnidadeConsumidora()
+        uc.nome = ucNome
+        uc.numeroInstalacao = ucInstalacao
+        uc.endereco = ucEndereco
+        uc.cliente = cliente
+        cliente.unidadesConsumidoras = mutableListOf(uc)
+
+        return cliente
+    }
 
     @Test
     fun `documento invalido lanca excecao`() {
-        val request = criarRequest().copy(documento = "12345")
+        val request = ClienteRequest(
+            nome = "Teste", documento = "12345",
+            endereco = EnderecoRequest("30140071", "1", null),
+            unidadesConsumidoras = listOf(UnidadeConsumidoraRequest("UC", "I1", EnderecoRequest("30140071", "1", null)))
+        )
         assertThrows<DocumentoInvalidoException> { service.criar(request) }
     }
 
     @Test
     fun `documento duplicado lanca excecao`() {
         every { clienteRepository.existsByDocumentoAndAtivoTrue("39053344705") } returns true
-        assertThrows<DocumentoDuplicadoException> { service.criar(criarRequest()) }
+        val request = ClienteRequest(
+            nome = "Teste", documento = "39053344705",
+            endereco = EnderecoRequest("30140071", "1", null),
+            unidadesConsumidoras = listOf(UnidadeConsumidoraRequest("UC", "I1", EnderecoRequest("30140071", "1", null)))
+        )
+        assertThrows<DocumentoDuplicadoException> { service.criar(request) }
     }
 
     @Test
     fun `finalizarCadastro bloqueia UC em SP`() {
-        val cliente = Cliente().apply {
-            nome = "Teste"
-            documento = Documento.of("39053344705")
-            endereco = enderecoMg()
-            unidadesConsumidoras = mutableListOf(
-                UnidadeConsumidora().apply {
-                    nome = "UC SP"
-                    numeroInstalacao = "SP001"
-                    endereco = enderecoSp()
-                    this.cliente = this@apply
-                }
-            )
-        }
+        val cliente = criarCliente(enderecoSp(), "UC SP", "SP001")
         assertThrows<UfBloqueadaException> { service.finalizarCadastro(cliente) }
     }
 
     @Test
     fun `finalizarCadastro bloqueia UC em RS`() {
-        val cliente = Cliente().apply {
-            nome = "Teste"
-            documento = Documento.of("39053344705")
-            endereco = enderecoMg()
-            unidadesConsumidoras = mutableListOf(
-                UnidadeConsumidora().apply {
-                    nome = "UC RS"
-                    numeroInstalacao = "RS001"
-                    endereco = Endereco("90010000", "Rua", "1", null, "Centro", "Porto Alegre", "RS")
-                    this.cliente = this@apply
-                }
-            )
-        }
+        val enderecoRs = Endereco("90010000", "Rua", "1", null, "Centro", "Porto Alegre", "RS")
+        val cliente = criarCliente(enderecoRs, "UC RS", "RS001")
         assertThrows<UfBloqueadaException> { service.finalizarCadastro(cliente) }
     }
 
     @Test
-    fun `finalizarCadastro permite UF nao bloqueada e publica evento MG`() {
-        val cliente = Cliente().apply {
-            nome = "Teste"
-            documento = Documento.of("39053344705")
-            endereco = enderecoMg()
-            unidadesConsumidoras = mutableListOf(
-                UnidadeConsumidora().apply {
-                    nome = "UC MG"
-                    numeroInstalacao = "MG001"
-                    endereco = enderecoMg()
-                    this.cliente = this@apply
-                }
-            )
-        }
+    fun `finalizarCadastro bloqueia UC em PR`() {
+        val enderecoPr = Endereco("80010000", "Rua", "1", null, "Centro", "Curitiba", "PR")
+        val cliente = criarCliente(enderecoPr, "UC PR", "PR001")
+        assertThrows<UfBloqueadaException> { service.finalizarCadastro(cliente) }
+    }
 
+    @Test
+    fun `finalizarCadastro permite MG e publica evento`() {
+        val cliente = criarCliente(enderecoMg(), "UC MG", "MG001")
         every { clienteRepository.save(any()) } answers {
-            (firstArg<Cliente>()).apply { id = 1L; unidadesConsumidoras.forEach { it.id = 1L } }
+            firstArg<Cliente>().apply { id = 1L; unidadesConsumidoras.forEach { it.id = 1L } }
         }
 
         val result = service.finalizarCadastro(cliente)
         assertNotNull(result.id)
-        verify { eventPublisher.publishEvent(any()) }
+        verify { eventPublisher.publishEvent(any<Any>()) }
     }
 
     @Test
     fun `finalizarCadastro nao publica evento para UF diferente de MG`() {
-        val cliente = Cliente().apply {
-            nome = "Teste"
-            documento = Documento.of("39053344705")
-            endereco = enderecoRj()
-            unidadesConsumidoras = mutableListOf(
-                UnidadeConsumidora().apply {
-                    nome = "UC RJ"
-                    numeroInstalacao = "RJ001"
-                    endereco = enderecoRj()
-                    this.cliente = this@apply
-                }
-            )
-        }
-
+        val cliente = criarCliente(enderecoRj(), "UC RJ", "RJ001")
         every { clienteRepository.save(any()) } answers {
-            (firstArg<Cliente>()).apply { id = 1L; unidadesConsumidoras.forEach { it.id = 1L } }
+            firstArg<Cliente>().apply { id = 1L; unidadesConsumidoras.forEach { it.id = 1L } }
         }
 
         service.finalizarCadastro(cliente)
-        verify(exactly = 0) { eventPublisher.publishEvent(any()) }
+        verify(exactly = 0) { eventPublisher.publishEvent(any<Any>()) }
     }
 }
