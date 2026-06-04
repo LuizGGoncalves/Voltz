@@ -41,6 +41,7 @@ class SecurityConfig(
                 auth
                     .requestMatchers("/api/v1/auth/**").permitAll()
                     .requestMatchers("/actuator/health").permitAll()
+                    .requestMatchers("/api/v1/integracoes/viacep/status").permitAll()
                     .requestMatchers(HttpMethod.DELETE, "/api/v1/clientes/**").hasRole("ADMIN")
                     .requestMatchers(HttpMethod.PATCH, "/api/v1/clientes/*/documento").hasRole("ADMIN")
                     .anyRequest().authenticated()
