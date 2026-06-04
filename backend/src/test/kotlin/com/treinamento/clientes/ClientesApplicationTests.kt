@@ -1,13 +1,11 @@
 package com.treinamento.clientes
 
+import com.treinamento.clientes.integration.AbstractIntegrationTest
 import org.junit.jupiter.api.Test
-import org.springframework.boot.test.context.SpringBootTest
 
-@SpringBootTest
-class ClientesApplicationTests {
+class ClientesApplicationTests : AbstractIntegrationTest() {
 
 	@Test
 	fun contextLoads() {
 	}
-
 }
