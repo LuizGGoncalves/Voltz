@@ -1,16 +1,17 @@
 package com.treinamento.clientes.service
 
+import com.treinamento.clientes.domain.event.AnaliseClienteMgEvent
 import com.treinamento.clientes.domain.model.Cliente
+import com.treinamento.clientes.domain.model.Endereco
 import com.treinamento.clientes.domain.vo.Documento
-import com.treinamento.clientes.exception.ClienteNaoEncontradoException
-import com.treinamento.clientes.exception.DocumentoDuplicadoException
-import com.treinamento.clientes.exception.DocumentoInvalidoException
-import com.treinamento.clientes.exception.InstalacaoDuplicadaException
+import com.treinamento.clientes.exception.*
+import com.treinamento.clientes.integration.viacep.ViaCepService
 import com.treinamento.clientes.repository.ClienteRepository
 import com.treinamento.clientes.repository.UnidadeConsumidoraRepository
 import com.treinamento.clientes.web.dto.ClienteRequest
 import com.treinamento.clientes.web.mapper.toModel
-import com.treinamento.clientes.web.mapper.toResponse
+import org.slf4j.LoggerFactory
+import org.springframework.context.ApplicationEventPublisher
 import org.springframework.data.domain.Page
 import org.springframework.data.domain.PageRequest
 import org.springframework.data.domain.Pageable
@@ -21,8 +22,17 @@ import org.springframework.transaction.annotation.Transactional
 @Service
 class ClienteService(
     private val clienteRepository: ClienteRepository,
-    private val ucRepository: UnidadeConsumidoraRepository
+    private val ucRepository: UnidadeConsumidoraRepository,
+    private val viaCepService: ViaCepService,
+    private val eventPublisher: ApplicationEventPublisher
 ) {
+
+    private val log = LoggerFactory.getLogger(javaClass)
+
+    companion object {
+        val UFS_BLOQUEADAS = setOf("SP", "RS", "PR")
+        const val UF_EVENTO_MG = "MG"
+    }
 
     @Transactional
     fun criar(request: ClienteRequest): Cliente {
@@ -31,7 +41,48 @@ class ClienteService(
         validarInstalacoesUnicas(request.unidadesConsumidoras.map { it.numeroInstalacao })
 
         val cliente = request.toModel()
-        return clienteRepository.save(cliente)
+
+        // Enriquecer endereços via ViaCEP
+        val enderecoCliente = viaCepService.consultar(request.endereco.cep)
+        enriquecerEndereco(cliente.endereco, enderecoCliente)
+
+        cliente.unidadesConsumidoras.forEachIndexed { i, uc ->
+            val enderecoUc = viaCepService.consultar(request.unidadesConsumidoras[i].endereco.cep)
+            enriquecerEndereco(uc.endereco, enderecoUc)
+        }
+
+        return finalizarCadastro(cliente)
+    }
+
+    /**
+     * FONTE ÚNICA das regras de UF.
+     * Chamado pelo caminho síncrono (criar) e pelo job de retry (Sprint 4).
+     */
+    fun finalizarCadastro(cliente: Cliente): Cliente {
+        // Regra de UF nas UCs
+        cliente.unidadesConsumidoras.forEach { uc ->
+            val uf = uc.endereco.uf.uppercase()
+            if (uf in UFS_BLOQUEADAS) {
+                throw UfBloqueadaException(uf, uc.nome)
+            }
+        }
+
+        val salvo = clienteRepository.save(cliente)
+
+        // Evento MG — publicado APÓS o save (listener roda after commit)
+        salvo.unidadesConsumidoras.forEach { uc ->
+            if (uc.endereco.uf.uppercase() == UF_EVENTO_MG) {
+                log.info("UC '{}' em MG — publicando evento analise_cliente_mg", uc.nome)
+                eventPublisher.publishEvent(
+                    AnaliseClienteMgEvent(
+                        clienteId = salvo.id!!,
+                        unidadeConsumidoraId = uc.id!!
+                    )
+                )
+            }
+        }
+
+        return salvo
     }
 
     @Transactional
@@ -39,12 +90,10 @@ class ClienteService(
         val cliente = buscarOuFalhar(id)
         val documento = validarDocumento(request.documento)
 
-        // Se o documento mudou, valida unicidade
         if (cliente.documento?.valor != documento.valor) {
             validarDocumentoUnico(documento.valor)
         }
 
-        // Valida instalações (excluindo as do próprio cliente)
         val instalacoesProprias = cliente.unidadesConsumidoras
             .filter { it.ativo }
             .map { it.numeroInstalacao }
@@ -57,13 +106,20 @@ class ClienteService(
         cliente.documento = documento
         cliente.endereco = request.endereco.toModel()
 
-        // Sincronizar UCs: limpar e re-adicionar
+        // Enriquecer endereço do cliente
+        val enderecoCliente = viaCepService.consultar(request.endereco.cep)
+        enriquecerEndereco(cliente.endereco, enderecoCliente)
+
+        // Sincronizar UCs
         cliente.unidadesConsumidoras.clear()
-        request.unidadesConsumidoras.forEach { ucReq ->
-            cliente.adicionarUC(ucReq.toModel())
+        request.unidadesConsumidoras.forEachIndexed { i, ucReq ->
+            val uc = ucReq.toModel()
+            val enderecoUc = viaCepService.consultar(ucReq.endereco.cep)
+            enriquecerEndereco(uc.endereco, enderecoUc)
+            cliente.adicionarUC(uc)
         }
 
-        return clienteRepository.save(cliente)
+        return finalizarCadastro(cliente)
     }
 
     @Transactional(readOnly = true)
@@ -105,5 +161,12 @@ class ClienteService(
                 throw InstalacaoDuplicadaException(numero)
             }
         }
+    }
+
+    private fun enriquecerEndereco(destino: Endereco, viaCep: Endereco) {
+        destino.logradouro = viaCep.logradouro
+        destino.bairro = viaCep.bairro
+        destino.cidade = viaCep.cidade
+        destino.uf = viaCep.uf
     }
 }

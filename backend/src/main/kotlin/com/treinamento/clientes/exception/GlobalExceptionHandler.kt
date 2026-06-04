@@ -1,5 +1,7 @@
 package com.treinamento.clientes.exception
 
+import com.treinamento.clientes.integration.viacep.CepInvalidoException
+import com.treinamento.clientes.integration.viacep.ViaCepIndisponivelException
 import org.springframework.http.HttpStatus
 import org.springframework.http.ProblemDetail
 import org.springframework.web.bind.MethodArgumentNotValidException
@@ -32,6 +34,22 @@ class GlobalExceptionHandler {
         problem.setProperty("errors", errors)
         return problem
     }
+
+    @ExceptionHandler(UfBloqueadaException::class)
+    fun handleUfBloqueada(ex: UfBloqueadaException): ProblemDetail =
+        ProblemDetail.forStatusAndDetail(HttpStatus.UNPROCESSABLE_ENTITY, ex.message!!)
+
+    @ExceptionHandler(CepNaoEncontradoException::class)
+    fun handleCepNaoEncontrado(ex: CepNaoEncontradoException): ProblemDetail =
+        ProblemDetail.forStatusAndDetail(HttpStatus.UNPROCESSABLE_ENTITY, ex.message!!)
+
+    @ExceptionHandler(CepInvalidoException::class)
+    fun handleCepInvalido(ex: CepInvalidoException): ProblemDetail =
+        ProblemDetail.forStatusAndDetail(HttpStatus.UNPROCESSABLE_ENTITY, ex.message!!)
+
+    @ExceptionHandler(ViaCepIndisponivelException::class)
+    fun handleViaCepIndisponivel(ex: ViaCepIndisponivelException): ProblemDetail =
+        ProblemDetail.forStatusAndDetail(HttpStatus.SERVICE_UNAVAILABLE, ex.message!!)
 
     @ExceptionHandler(IllegalArgumentException::class)
     fun handleIllegalArgument(ex: IllegalArgumentException): ProblemDetail =

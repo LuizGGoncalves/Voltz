@@ -11,3 +11,9 @@ class ClienteNaoEncontradoException(id: Long) :
 
 class DocumentoInvalidoException(documento: String) :
     RuntimeException("Documento inválido (CPF ou CNPJ): $documento")
+
+class UfBloqueadaException(uf: String, ucNome: String) :
+    RuntimeException("Unidade consumidora '$ucNome' em $uf não é permitida.")
+
+class CepNaoEncontradoException(cep: String) :
+    RuntimeException("CEP não encontrado: $cep")
