@@ -3,6 +3,7 @@ package com.treinamento.clientes.service
 import com.treinamento.clientes.domain.event.AnaliseClienteMgEvent
 import com.treinamento.clientes.domain.model.Cliente
 import com.treinamento.clientes.domain.model.Endereco
+import com.treinamento.clientes.domain.model.UnidadeConsumidora
 import com.treinamento.clientes.domain.vo.Documento
 import com.treinamento.clientes.exception.*
 import com.treinamento.clientes.integration.viacep.ViaCepService
@@ -87,7 +88,8 @@ class ClienteService(
 
     @Transactional
     fun atualizar(id: Long, request: ClienteRequest): Cliente {
-        val cliente = buscarOuFalhar(id)
+        val cliente = clienteRepository.findByIdWithUCs(id)
+            .orElseThrow { ClienteNaoEncontradoException(id) }
         val documento = validarDocumento(request.documento)
 
         if (cliente.documento?.valor != documento.valor) {
@@ -104,20 +106,36 @@ class ClienteService(
 
         cliente.nome = request.nome
         cliente.documento = documento
-        cliente.endereco = request.endereco.toModel()
 
         // Enriquecer endereço do cliente
         val enderecoCliente = viaCepService.consultar(request.endereco.cep)
+        cliente.endereco = request.endereco.toModel()
         enriquecerEndereco(cliente.endereco, enderecoCliente)
 
-        // Sincronizar UCs
-        cliente.unidadesConsumidoras.clear()
+        // Sincronizar UCs: atualizar existentes e adicionar novas
+        val ucsExistentes = cliente.unidadesConsumidoras.associateBy { it.numeroInstalacao }.toMutableMap()
+        val ucsAtualizadas = mutableListOf<UnidadeConsumidora>()
+
         request.unidadesConsumidoras.forEachIndexed { i, ucReq ->
-            val uc = ucReq.toModel()
             val enderecoUc = viaCepService.consultar(ucReq.endereco.cep)
-            enriquecerEndereco(uc.endereco, enderecoUc)
-            cliente.adicionarUC(uc)
+            val ucExistente = ucsExistentes.remove(ucReq.numeroInstalacao)
+
+            if (ucExistente != null) {
+                ucExistente.nome = ucReq.nome
+                ucExistente.endereco = ucReq.endereco.toModel()
+                enriquecerEndereco(ucExistente.endereco, enderecoUc)
+                ucsAtualizadas.add(ucExistente)
+            } else {
+                val novaUc = ucReq.toModel()
+                enriquecerEndereco(novaUc.endereco, enderecoUc)
+                novaUc.cliente = cliente
+                ucsAtualizadas.add(novaUc)
+            }
         }
+
+        // Remover UCs que não estão mais no request (orphanRemoval cuida do soft delete)
+        cliente.unidadesConsumidoras.clear()
+        cliente.unidadesConsumidoras.addAll(ucsAtualizadas)
 
         return finalizarCadastro(cliente)
     }

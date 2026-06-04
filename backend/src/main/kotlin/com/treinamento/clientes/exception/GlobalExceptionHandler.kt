@@ -2,6 +2,7 @@ package com.treinamento.clientes.exception
 
 import com.treinamento.clientes.integration.viacep.CepInvalidoException
 import com.treinamento.clientes.integration.viacep.ViaCepIndisponivelException
+import org.springframework.dao.DataIntegrityViolationException
 import org.springframework.http.HttpStatus
 import org.springframework.http.ProblemDetail
 import org.springframework.web.bind.MethodArgumentNotValidException
@@ -50,6 +51,10 @@ class GlobalExceptionHandler {
     @ExceptionHandler(ViaCepIndisponivelException::class)
     fun handleViaCepIndisponivel(ex: ViaCepIndisponivelException): ProblemDetail =
         ProblemDetail.forStatusAndDetail(HttpStatus.SERVICE_UNAVAILABLE, ex.message!!)
+
+    @ExceptionHandler(DataIntegrityViolationException::class)
+    fun handleDataIntegrity(ex: DataIntegrityViolationException): ProblemDetail =
+        ProblemDetail.forStatusAndDetail(HttpStatus.CONFLICT, "Violação de integridade: registro duplicado ou referência inválida")
 
     @ExceptionHandler(IllegalArgumentException::class)
     fun handleIllegalArgument(ex: IllegalArgumentException): ProblemDetail =
