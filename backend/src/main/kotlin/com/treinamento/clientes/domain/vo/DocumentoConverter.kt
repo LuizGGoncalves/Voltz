@@ -10,5 +10,5 @@ class DocumentoConverter : AttributeConverter<Documento, String> {
         attribute?.valor
 
     override fun convertToEntityAttribute(dbData: String?): Documento? =
-        dbData?.let { Documento.of(it) }
+        dbData?.let { Documento.fromDatabase(it) }
 }

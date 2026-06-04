@@ -8,6 +8,9 @@ class Documento private constructor(val valor: String) {
         get() = if (valor.length == 11) TipoDocumento.CPF else TipoDocumento.CNPJ
 
     companion object {
+        // Usado internamente pelo JPA/converter — banco é fronteira confiável
+        internal fun fromDatabase(valor: String): Documento = Documento(valor)
+
         fun of(entrada: String): Documento {
             val normalizado = entrada.replace(Regex("[^0-9]"), "")
             require(ehValido(normalizado)) { "Documento inválido: $entrada" }

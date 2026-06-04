@@ -40,7 +40,7 @@ class ClienteService(
         val documento = validarDocumento(request.documento)
 
         // Se o documento mudou, valida unicidade
-        if (cliente.documento.valor != documento.valor) {
+        if (cliente.documento?.valor != documento.valor) {
             validarDocumentoUnico(documento.valor)
         }
 
@@ -67,7 +67,8 @@ class ClienteService(
     }
 
     @Transactional(readOnly = true)
-    fun buscarPorId(id: Long): Cliente = buscarOuFalhar(id)
+    fun buscarPorId(id: Long): Cliente =
+        clienteRepository.findByIdWithUCs(id).orElseThrow { ClienteNaoEncontradoException(id) }
 
     @Transactional(readOnly = true)
     fun listar(pageable: Pageable, incluirInativos: Boolean = false): Page<Cliente> =

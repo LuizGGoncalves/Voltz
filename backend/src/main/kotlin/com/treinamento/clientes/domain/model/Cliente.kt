@@ -22,7 +22,7 @@ class Cliente(
     var nome: String = "",
 
     @Column(nullable = false, length = 14)
-    var documento: Documento = Documento.of("00000000000"),
+    var documento: Documento? = null,
 
     @Embedded
     @AttributeOverrides(
