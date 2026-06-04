@@ -15,7 +15,7 @@
 3. Consulte sob demanda: **modelo de dados (4)**, **regras de negócio (5)**, **endpoints + exemplos JSON (6)**, **auditoria de riscos (8.1)** e os **apêndices** (A: validação; **C: dependências, config e esqueletos prontos**).
 4. Respeite a **regra de ouro (8.2):** não inicie um bloco antes de sua dependência estar funcional.
 
-**Ambiente alvo (host):** Windows, **dev 100% Docker** — só **Docker Desktop** + `git` no host; nenhum JDK/Node/Maven instalado na máquina (tudo roda em container — ver seção 2.2). Pasta do projeto: monorepo (`/backend`, `/frontend`, compose na raiz).
+**Ambiente alvo (host):** **dev 100% Docker** — só **Docker Desktop** + `git` no host; nenhum JDK/Node/Maven instalado na máquina (tudo roda em container — ver seção 2.2). Pasta do projeto: monorepo (`/backend`, `/frontend`, compose na raiz).
 
 **Stack (resumo):** Kotlin + Spring Boot 3.x (JDK 21) · Maven · Spring Data JPA/Hibernate · PostgreSQL · Flyway · Spring Security (JWT/Resource Server) · springdoc-OpenAPI · **Angular standalone (≥17)** + Angular Material + ngx-mask. Versões exatas: pinar a **estável madura** vigente no momento do scaffold (política na seção 2).
 
@@ -282,7 +282,7 @@ Fluxo no start do backend: **Flyway aplica migrations novas → Hibernate valida
 
 ## 2.2 Estratégia de desenvolvimento — 100% Docker (sem nada instalado no host)
 
-**Princípio:** o Windows do João só precisa de **um runtime de containers**. Nenhum JDK, Kotlin, Gradle/Maven, Node, npm ou Angular CLI é instalado na máquina — tudo roda dentro de containers, com o código-fonte montado por *volume* (edição no host, execução no container).
+**Princípio:** o host só precisa de **um runtime de containers**. Nenhum JDK, Kotlin, Gradle/Maven, Node, npm ou Angular CLI é instalado na máquina — tudo roda dentro de containers, com o código-fonte montado por *volume* (edição no host, execução no container).
 
 ### Único pré-requisito no host
 - **Runtime de containers**: **Docker Desktop** (decidido) — inclui Docker Engine + Compose. *Ainda não instalado na máquina; instalação será o primeiro passo da execução.*
@@ -310,10 +310,9 @@ Fluxo no start do backend: **Flyway aplica migrations novas → Hibernate valida
 - `Makefile` / `scripts/` — atalhos para os comandos `docker compose run/exec`.
 
 ### Pontos de atenção do fluxo dockerizado
-- **Hot reload**: backend via Spring DevTools + volume; frontend via `ng serve` com polling (necessário em volumes Windows/WSL).
+- **Hot reload**: backend via Spring DevTools + volume; frontend via `ng serve`.
 - **node_modules / `.m2` (cache Maven) / `target`**: usar volumes nomeados ou anônimos para não poluir o host e manter performance.
-- **Permissões/linha de fim de arquivo (CRLF)**: configurar `.gitattributes` para evitar problemas Windows↔container Linux.
-- **Performance de I/O**: em Windows, manter o código dentro do WSL2 acelera bastante (avaliar depois).
+- **Permissões/linha de fim de arquivo**: configurar `.gitattributes` para manter LF no repositório.
 
 ---
 
