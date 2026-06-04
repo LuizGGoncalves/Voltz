@@ -1,10 +1,9 @@
 package com.treinamento.clientes.web.controller
 
+import com.treinamento.clientes.integration.viacep.ViaCepIndisponivelException
+import com.treinamento.clientes.service.CadastroPendenteService
 import com.treinamento.clientes.service.ClienteService
-import com.treinamento.clientes.web.dto.ClienteRequest
-import com.treinamento.clientes.web.dto.ClienteResumoResponse
-import com.treinamento.clientes.web.dto.ClienteResponse
-import com.treinamento.clientes.web.dto.CorrecaoDocumentoRequest
+import com.treinamento.clientes.web.dto.*
 import com.treinamento.clientes.web.mapper.toResponse
 import com.treinamento.clientes.web.mapper.toResumoResponse
 import jakarta.validation.Valid
@@ -17,12 +16,22 @@ import org.springframework.web.bind.annotation.*
 
 @RestController
 @RequestMapping("/api/v1/clientes")
-class ClienteController(private val clienteService: ClienteService) {
+class ClienteController(
+    private val clienteService: ClienteService,
+    private val cadastroPendenteService: CadastroPendenteService
+) {
 
     @PostMapping
-    fun criar(@Valid @RequestBody request: ClienteRequest): ResponseEntity<ClienteResponse> {
-        val cliente = clienteService.criar(request)
-        return ResponseEntity.status(HttpStatus.CREATED).body(cliente.toResponse())
+    fun criar(@Valid @RequestBody request: ClienteRequest): ResponseEntity<*> {
+        return try {
+            val cliente = clienteService.criar(request)
+            ResponseEntity.status(HttpStatus.CREATED).body(cliente.toResponse())
+        } catch (ex: ViaCepIndisponivelException) {
+            val pendente = cadastroPendenteService.enfileirar(request)
+            ResponseEntity.status(HttpStatus.ACCEPTED).body(
+                CadastroPendenteCreatedResponse(cadastroPendenteId = pendente.id!!)
+            )
+        }
     }
 
     @PutMapping("/{id}")
