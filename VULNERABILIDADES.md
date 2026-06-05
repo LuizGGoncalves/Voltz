@@ -86,15 +86,13 @@
 ### ~~A6. Sem handler OptimisticLockingFailureException~~ — RESOLVIDO
 - **Solução:** Handler → 409 "Registro modificado por outro usuário" (risco #10 PLANO)
 
-### A7. Falta `@Version` na UnidadeConsumidora
-- **Onde:** `UnidadeConsumidora.kt`
-- **Problema:** `@SQLDelete` sem version; concurrent deletes sem conflito
-- **Fix:** Adicionar `@Version` e ajustar SQLDelete query
+### A7. ~~Falta `@Version` na UnidadeConsumidora~~ — NÃO APLICÁVEL
+- **Análise:** UC não tem endpoint próprio — sempre editada via cascade do Cliente. O `@Version` do Cliente já protege contra edições concorrentes. Adicionar `@Version` na UC complicaria o cascade (orphanRemoval + SQLDelete precisariam da version) sem ganho real. Se a UC tiver endpoint direto no futuro, reavaliar
+- **Decisão:** manter sem `@Version` na UC; risco #10 coberto pelo Cliente
 
-### A8. Dockerfiles/compose de produção não entregues (Sprint 6)
+### A8. Dockerfiles/compose de produção — PENDENTE (aguarda infra)
 - **PLANO:** Dockerfiles multi-stage + docker-compose.prod.yml
-- **Atual:** Só dev
-- **Fix:** Criar stages de prod com HTTPS, secure cookies, secrets injetados
+- **Status:** aguardando definição de ambiente de deploy (AWS). Quando definido: Dockerfiles multi-stage (build → JRE slim / build → Nginx), nginx.prod.conf com HTTPS/HSTS, docker-compose.prod.yml com secrets injetados via AWS Secrets Manager
 
 ---
 
