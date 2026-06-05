@@ -1,6 +1,8 @@
 package com.treinamento.clientes.domain.model
 
 import jakarta.persistence.*
+import org.hibernate.annotations.JdbcTypeCode
+import org.hibernate.type.SqlTypes
 import java.time.Instant
 
 @Entity
@@ -14,6 +16,7 @@ class CadastroPendente(
     @Column(nullable = false, length = 14)
     var documento: String = "",
 
+    @JdbcTypeCode(SqlTypes.JSON)
     @Column(nullable = false, columnDefinition = "JSONB")
     var payload: String = "",
 
