@@ -50,10 +50,10 @@
 - **Problema:** `RuntimeException` sem handler → 500 genérico
 - **Solução aplicada:** `UsernameNotFoundException` (Spring Security) — tratado nativamente como 401. Mesmo padrão do C4
 
-### C6. Sem rate limiting no login (Risco #12 do PLANO)
-- **Onde:** `AuthController.kt` — nenhuma proteção
+### ~~C6. Sem rate limiting no login (Risco #12 do PLANO)~~ — RESOLVIDO
+- **Onde:** `AuthController.kt`
 - **Problema:** Brute force ilimitado no `/auth/login`
-- **Fix:** Implementar throttle por IP/username (bucket4j ou similar); mínimo: log de falhas
+- **Solução aplicada:** `bucket4j` com `RateLimitService` — 5 tentativas a cada 15 minutos por IP. Excedido → 429 Too Many Requests (ProblemDetail). Log de warning com IP. `RateLimitExceededException` + handler no GlobalExceptionHandler
 
 ### C7. Logout/Refresh sem `@PreAuthorize` explícito
 - **Onde:** `AuthController.kt`

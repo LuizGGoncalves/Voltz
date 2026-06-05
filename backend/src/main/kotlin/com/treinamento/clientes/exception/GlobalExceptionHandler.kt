@@ -52,6 +52,10 @@ class GlobalExceptionHandler {
     fun handleViaCepIndisponivel(ex: ViaCepIndisponivelException): ProblemDetail =
         ProblemDetail.forStatusAndDetail(HttpStatus.SERVICE_UNAVAILABLE, ex.message!!)
 
+    @ExceptionHandler(RateLimitExceededException::class)
+    fun handleRateLimit(ex: RateLimitExceededException): ProblemDetail =
+        ProblemDetail.forStatusAndDetail(HttpStatus.TOO_MANY_REQUESTS, ex.message!!)
+
     @ExceptionHandler(DataIntegrityViolationException::class)
     fun handleDataIntegrity(ex: DataIntegrityViolationException): ProblemDetail =
         ProblemDetail.forStatusAndDetail(HttpStatus.CONFLICT, "Violação de integridade: registro duplicado ou referência inválida")

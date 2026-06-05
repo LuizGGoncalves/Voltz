@@ -1,8 +1,11 @@
 package com.treinamento.clientes.web.controller
 
+import com.treinamento.clientes.exception.RateLimitExceededException
 import com.treinamento.clientes.repository.UsuarioRepository
 import com.treinamento.clientes.security.JwtService
+import com.treinamento.clientes.security.RateLimitService
 import com.treinamento.clientes.service.RefreshTokenService
+import org.slf4j.LoggerFactory
 import com.treinamento.clientes.web.dto.LoginRequest
 import com.treinamento.clientes.web.dto.LoginResponse
 import jakarta.servlet.http.HttpServletRequest
@@ -25,8 +28,11 @@ class AuthController(
     private val authenticationManager: AuthenticationManager,
     private val jwtService: JwtService,
     private val refreshTokenService: RefreshTokenService,
-    private val usuarioRepository: UsuarioRepository
+    private val usuarioRepository: UsuarioRepository,
+    private val rateLimitService: RateLimitService
 ) {
+
+    private val log = LoggerFactory.getLogger(javaClass)
 
     @PostMapping("/login")
     fun login(
@@ -34,6 +40,12 @@ class AuthController(
         httpRequest: HttpServletRequest,
         response: HttpServletResponse
     ): ResponseEntity<LoginResponse> {
+        val clientIp = httpRequest.remoteAddr
+        if (!rateLimitService.tryConsume(clientIp)) {
+            log.warn("Rate limit excedido para IP={}", clientIp)
+            throw RateLimitExceededException()
+        }
+
         val authentication: Authentication = authenticationManager.authenticate(
             UsernamePasswordAuthenticationToken(loginRequest.username, loginRequest.password)
         )
