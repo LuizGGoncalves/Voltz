@@ -116,16 +116,27 @@ flowchart TD
 
 ```bash
 # 1. Clonar e configurar
+git clone git@github.com:LuizGGoncalves/Voltz.git
+cd Voltz
 cp .env.example .env
 
 # 2. Subir tudo (banco + backend + frontend)
 docker compose up -d --build
 
 # 3. Acessar
-# Frontend: http://localhost:4200
-# Swagger:  http://localhost:4200/swagger-ui/index.html
-# Login:    admin / admin123
+open http://localhost:4200
 ```
+
+### Primeiro acesso
+
+| | |
+|-|-|
+| **Frontend** | [http://localhost:4200](http://localhost:4200) |
+| **Swagger (API docs)** | [http://localhost:4200/swagger-ui/index.html](http://localhost:4200/swagger-ui/index.html) |
+| **Usuário** | `admin` |
+| **Senha** | `admin123` |
+
+> O usuário `admin` tem roles ADMIN e USER — acesso total a todas as funcionalidades.
 
 ### Com dados de demonstração
 
