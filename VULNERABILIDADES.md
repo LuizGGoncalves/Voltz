@@ -19,11 +19,11 @@
 
 ## CRITICO — Fix Imediato
 
-### C1. Swagger público (viola D29 do PLANO)
+### ~~C1. Swagger público (viola D29 do PLANO)~~ — RESOLVIDO
 - **Onde:** `SecurityConfig.kt:45`
 - **Problema:** `.requestMatchers("/swagger-ui/**", "/v3/api-docs/**").permitAll()` — PLANO diz Swagger protegido (autenticado)
 - **Risco:** Expõe toda a estrutura da API publicamente (OWASP A05:2021)
-- **Fix:** Remover `permitAll()` do Swagger; em dev, usar profile condicional
+- **Solução aplicada:** Swagger controlado por `springdoc.swagger-ui.public-access` (default: `false` = protegido). Em dev, `SPRINGDOC_PUBLIC_ACCESS=true` via env var. **Justificativa:** velocidade no desenvolvimento local (sem precisar copiar token para cada teste no Swagger) com segurança em produção (default protegido — esquecer a config não expõe nada)
 
 ### C2. Cookie `secure=false` sem parametrização por profile
 - **Onde:** `AuthController.kt:105`

@@ -3,6 +3,7 @@ package com.treinamento.clientes.config
 import com.fasterxml.jackson.databind.ObjectMapper
 import com.treinamento.clientes.security.JwtAuthenticationConverter
 import com.treinamento.clientes.security.JwtProperties
+import org.springframework.beans.factory.annotation.Value
 import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration
 import org.springframework.http.HttpMethod
@@ -28,7 +29,9 @@ import javax.crypto.spec.SecretKeySpec
 class SecurityConfig(
     private val jwtProperties: JwtProperties,
     private val jwtAuthenticationConverter: JwtAuthenticationConverter,
-    private val objectMapper: ObjectMapper
+    private val objectMapper: ObjectMapper,
+    @Value("\${springdoc.swagger-ui.public-access:false}")
+    private val swaggerPublico: Boolean
 ) {
 
     @Bean
@@ -42,7 +45,12 @@ class SecurityConfig(
                     .requestMatchers("/api/v1/auth/**").permitAll()
                     .requestMatchers("/actuator/health").permitAll()
                     .requestMatchers("/api/v1/integracoes/viacep/status").permitAll()
-                    .requestMatchers("/swagger-ui/**", "/v3/api-docs/**", "/swagger-ui.html").permitAll()
+                    // Swagger: público em dev (agilidade), protegido em prod (segurança).
+                    // Controlado por springdoc.swagger-ui.public-access (default: false = protegido).
+                    .apply {
+                        val swagger = requestMatchers("/swagger-ui/**", "/v3/api-docs/**", "/swagger-ui.html")
+                        if (swaggerPublico) swagger.permitAll() else swagger.authenticated()
+                    }
                     .requestMatchers(HttpMethod.DELETE, "/api/v1/clientes/**").hasRole("ADMIN")
                     .requestMatchers(HttpMethod.PATCH, "/api/v1/clientes/*/documento").hasRole("ADMIN")
                     .anyRequest().authenticated()

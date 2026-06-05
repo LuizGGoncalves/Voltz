@@ -26,6 +26,7 @@ services:
       JWT_SECRET: ${JWT_SECRET:-dev-secret-nao-usar-em-producao-256bits-minimo!!}
       JWT_ACCESS_EXPIRATION_MS: ${JWT_ACCESS_EXPIRATION_MS:-900000}
       JWT_REFRESH_EXPIRATION_MS: ${JWT_REFRESH_EXPIRATION_MS:-604800000}
+      SPRINGDOC_PUBLIC_ACCESS: ${SPRINGDOC_PUBLIC_ACCESS:-true}
     volumes:
       - ./backend/src:/app/src
       - maven-cache:/root/.m2

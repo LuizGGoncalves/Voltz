@@ -35,6 +35,10 @@ jwt:
   access-expiration-ms: ${JWT_ACCESS_EXPIRATION_MS:900000}
   refresh-expiration-ms: ${JWT_REFRESH_EXPIRATION_MS:604800000}
 
+springdoc:
+  swagger-ui:
+    public-access: ${SPRINGDOC_PUBLIC_ACCESS:false}
+
 management:
   endpoints:
     web:
