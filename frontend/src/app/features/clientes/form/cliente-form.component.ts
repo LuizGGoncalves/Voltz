@@ -13,6 +13,7 @@ import { NgxMaskDirective } from 'ngx-mask';
 import { ClienteService } from '../../../core/services/cliente.service';
 import { ClienteRequest, ClienteUpdateRequest } from '../../../core/models/cliente.model';
 import { EnderecoFormComponent } from '../../../shared';
+import { documentoValidator } from '../../../shared/validators/documento.validator';
 
 @Component({
   selector: 'app-cliente-form',
@@ -37,11 +38,19 @@ import { EnderecoFormComponent } from '../../../shared';
               <mat-form-field appearance="outline" class="flex-2">
                 <mat-label>Nome</mat-label>
                 <input matInput formControlName="nome" placeholder="Nome completo ou razão social">
+                @if (form.get('nome')?.hasError('required') && form.get('nome')?.touched) {
+                  <mat-error>Nome é obrigatório</mat-error>
+                }
               </mat-form-field>
               <mat-form-field appearance="outline" class="flex-1">
                 <mat-label>CPF/CNPJ</mat-label>
                 <input matInput formControlName="documento" [mask]="docMask" [dropSpecialCharacters]="false"
                        placeholder="Digite o documento">
+                @if (form.get('documento')?.hasError('required') && form.get('documento')?.touched) {
+                  <mat-error>Documento é obrigatório</mat-error>
+                } @else if (form.get('documento')?.hasError('documento')) {
+                  <mat-error>{{ form.get('documento')?.getError('documento') }}</mat-error>
+                }
               </mat-form-field>
             </div>
           </div>
@@ -191,7 +200,7 @@ export class ClienteFormComponent implements OnInit {
   ngOnInit() {
     this.form = this.fb.group({
       nome: ['', Validators.required],
-      documento: ['', Validators.required],
+      documento: ['', [Validators.required, documentoValidator]],
       endereco: EnderecoFormComponent.createGroup(this.fb),
       uc: this.fb.group({
         nome: ['', Validators.required],
