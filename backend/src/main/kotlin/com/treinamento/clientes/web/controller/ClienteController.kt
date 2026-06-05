@@ -12,6 +12,7 @@ import org.springframework.data.domain.Pageable
 import org.springframework.data.web.PageableDefault
 import org.springframework.http.HttpStatus
 import org.springframework.http.ResponseEntity
+import org.springframework.security.access.prepost.PreAuthorize
 import org.springframework.web.bind.annotation.*
 
 @RestController
@@ -21,6 +22,7 @@ class ClienteController(
     private val cadastroPendenteService: CadastroPendenteService
 ) {
 
+    @PreAuthorize("hasRole('USER')")
     @PostMapping
     fun criar(@Valid @RequestBody request: ClienteRequest): ResponseEntity<*> {
         return try {
@@ -34,6 +36,7 @@ class ClienteController(
         }
     }
 
+    @PreAuthorize("hasRole('USER')")
     @PutMapping("/{id}")
     fun atualizar(
         @PathVariable id: Long,
@@ -64,6 +67,7 @@ class ClienteController(
         return ResponseEntity.ok(page)
     }
 
+    @PreAuthorize("hasRole('ADMIN')")
     @PatchMapping("/{id}/documento")
     fun corrigirDocumento(
         @PathVariable id: Long,
@@ -73,6 +77,7 @@ class ClienteController(
         return ResponseEntity.ok(cliente.toResponse())
     }
 
+    @PreAuthorize("hasRole('ADMIN')")
     @DeleteMapping("/{id}")
     @ResponseStatus(HttpStatus.NO_CONTENT)
     fun inativar(@PathVariable id: Long) {
