@@ -272,7 +272,7 @@ Usada em `ClienteService.finalizarCadastro()` (criação) e `UnidadeConsumidoraS
 flowchart LR
     A[ViaCEP down] --> B[INSERT ON CONFLICT<br/>atômico, sem race condition]
     B --> C[202 Accepted]
-    C --> D[Job @Scheduled<br/>1 min interval]
+    C --> D[Job Scheduled<br/>1 min interval]
     D --> E{ViaCEP up?}
     E -->|Sim| F{UF ok?}
     F -->|Sim| G[PROCESSADO]

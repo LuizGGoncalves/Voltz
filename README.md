@@ -135,9 +135,9 @@ graph LR
     Angular -->|proxy.conf.json| API[Spring Boot API<br/>:8080]
     API --> DB[(PostgreSQL<br/>:5432)]
     API -->|HTTP 3s timeout| ViaCEP[ViaCEP API<br/>externa]
-    API -->|@Scheduled| Job[Retry Job<br/>backoff exponencial]
+    API -->|Scheduled| Job[Retry Job<br/>backoff exponencial]
     Job --> DB
-    API -->|ApplicationEvent| Listener[Listener MG<br/>@Async]
+    API -->|ApplicationEvent| Listener[Listener MG<br/>Async]
     Listener --> DB
 ```
 
