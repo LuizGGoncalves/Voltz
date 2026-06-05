@@ -1,0 +1,17 @@
+# === Profile TEST ===
+# Overrides para testes de integração (Testcontainers).
+
+jwt:
+  secret: test-secret-key-apenas-para-testes-nunca-usar-em-prod!!
+
+springdoc:
+  swagger-ui:
+    public-access: true
+
+cors:
+  allowed-origins: http://localhost
+
+rate-limit:
+  login:
+    capacity: 1000
+    refill-minutes: 1
