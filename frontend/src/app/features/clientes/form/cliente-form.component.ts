@@ -153,11 +153,12 @@ import { EnderecoFormComponent } from '../../../shared';
     .form-actions-bar {
       position: sticky;
       bottom: 0;
-      background: var(--surface);
+      background: var(--bg);
       border-top: 1px solid var(--border);
-      margin: 0 -28px -26px;
-      padding: 14px 28px;
+      margin: 20px -28px -26px;
+      padding: 16px 28px;
       z-index: 10;
+      box-shadow: 0 -4px 12px rgba(0, 0, 0, .04);
     }
 
     .form-actions-inner {

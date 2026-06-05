@@ -39,32 +39,71 @@ import { ViaCepService } from '../../../core/services/viacep.service';
       </div>
     }
 
-    <div [formGroup]="form" class="row campos-auto" [class.preenchido]="form.get('logradouro')?.value">
-      <mat-form-field appearance="outline" class="flex-2 field-readonly">
-        <mat-label>Logradouro</mat-label>
-        <input matInput formControlName="logradouro" readonly tabindex="-1">
-      </mat-form-field>
-      <mat-form-field appearance="outline" class="flex-1 field-readonly">
-        <mat-label>Bairro</mat-label>
-        <input matInput formControlName="bairro" readonly tabindex="-1">
-      </mat-form-field>
-      <mat-form-field appearance="outline" class="flex-1 field-readonly">
-        <mat-label>Cidade</mat-label>
-        <input matInput formControlName="cidade" readonly tabindex="-1">
-      </mat-form-field>
-      <mat-form-field appearance="outline" class="field-readonly" style="width:80px">
-        <mat-label>UF</mat-label>
-        <input matInput formControlName="uf" readonly tabindex="-1">
-      </mat-form-field>
+    <div [formGroup]="form" class="auto-fields" [class.preenchido]="form.get('logradouro')?.value">
+      <div class="auto-label">Preenchido pelo CEP</div>
+      <div class="auto-grid">
+        <div class="auto-item wide">
+          <span class="auto-field-label">Logradouro</span>
+          <span class="auto-field-value">{{ form.get('logradouro')?.value || '—' }}</span>
+        </div>
+        <div class="auto-item">
+          <span class="auto-field-label">Bairro</span>
+          <span class="auto-field-value">{{ form.get('bairro')?.value || '—' }}</span>
+        </div>
+        <div class="auto-item">
+          <span class="auto-field-label">Cidade</span>
+          <span class="auto-field-value">{{ form.get('cidade')?.value || '—' }}</span>
+        </div>
+        <div class="auto-item small">
+          <span class="auto-field-label">UF</span>
+          <span class="auto-field-value">{{ form.get('uf')?.value || '—' }}</span>
+        </div>
+      </div>
     </div>
   `,
   styles: [`
-    .campos-auto {
+    .auto-fields {
+      background: var(--field-readonly);
+      border: 1px solid var(--border);
+      border-radius: var(--r-md);
+      padding: 14px 16px;
       opacity: 0.5;
       transition: opacity 0.3s var(--ease);
     }
-    .campos-auto.preenchido {
+    .auto-fields.preenchido {
       opacity: 1;
+    }
+    .auto-label {
+      font-size: 11px;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.04em;
+      color: var(--text-faint);
+      margin-bottom: 10px;
+    }
+    .auto-grid {
+      display: flex;
+      gap: 20px;
+      flex-wrap: wrap;
+    }
+    .auto-item {
+      display: flex;
+      flex-direction: column;
+      gap: 2px;
+      min-width: 100px;
+    }
+    .auto-item.wide { flex: 2; min-width: 180px; }
+    .auto-item.small { min-width: 50px; flex: 0; }
+    .auto-item:not(.wide):not(.small) { flex: 1; }
+    .auto-field-label {
+      font-size: 11px;
+      font-weight: 600;
+      color: var(--text-faint);
+    }
+    .auto-field-value {
+      font-size: 14px;
+      font-weight: 500;
+      color: var(--text);
     }
 
     .feedback {

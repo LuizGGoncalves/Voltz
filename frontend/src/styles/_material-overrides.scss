@@ -125,14 +125,23 @@
   }
 }
 
-// Readonly fields — borda tracejada
-.field-readonly .mdc-notched-outline__leading,
-.field-readonly .mdc-notched-outline__notch,
-.field-readonly .mdc-notched-outline__trailing {
-  border-style: dashed !important;
-}
-.field-readonly input {
-  color: var(--text-soft) !important;
+// Readonly fields — fundo sutil, sem borda de foco
+.field-readonly {
+  .mdc-notched-outline__leading,
+  .mdc-notched-outline__notch,
+  .mdc-notched-outline__trailing {
+    border-color: var(--border) !important;
+    border-width: 1px !important;
+  }
+  .mat-mdc-text-field-wrapper {
+    background: var(--field-readonly) !important;
+  }
+  input {
+    color: var(--text-soft) !important;
+  }
+  .mat-mdc-form-field-icon-suffix {
+    color: var(--text-faint);
+  }
 }
 
 // -- Tabela --
