@@ -106,7 +106,7 @@ import {
           <tr mat-header-row *matHeaderRowDef="colunas"></tr>
           <tr mat-row *matRowDef="let row; columns: colunas;" class="clickable-row"></tr>
         </table>
-        <mat-paginator [length]="total()" [pageSize]="20" (page)="onPage($event)" showFirstLastButtons></mat-paginator>
+        <mat-paginator [length]="total()" [pageSize]="20" [pageIndex]="page" (page)="onPage($event)" showFirstLastButtons></mat-paginator>
       </div>
     }
   `,
