@@ -1,0 +1,7 @@
+# === Profile DEV ===
+# Overrides para desenvolvimento local.
+# Ativado via SPRING_PROFILES_ACTIVE=dev no docker-compose.
+
+springdoc:
+  swagger-ui:
+    public-access: true

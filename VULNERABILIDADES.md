@@ -30,10 +30,15 @@
 - **Problema:** `secure(false)` hardcoded — se deploy acidental em prod, refresh token viaja em HTTP puro
 - **Solução aplicada:** `secure(request.isSecure)` — o cookie acompanha o protocolo da requisição automaticamente. Em dev (HTTP) fica `false`, em prod (HTTPS via proxy) fica `true` sem config manual. Configurado `server.forward-headers-strategy: framework` para que o Spring leia `X-Forwarded-Proto` de proxies. **Justificativa:** padrão Spring Boot para apps atrás de proxy reverso; zero config manual = zero risco de esquecer
 
-### C3. JWT Secret padrão no código + padding inseguro
-- **Onde:** `application.yml:34`, `JwtService.kt:18`, `SecurityConfig.kt:73`
-- **Problema:** Secret default visível no código; se < 32 bytes, faz padding com zeros (enfraquece chave); lógica duplicada em 2 locais
-- **Fix:** Remover default; validar >= 32 bytes no `@PostConstruct`; centralizar criação da chave
+### ~~C3. JWT Secret padrão no código + padding inseguro~~ — RESOLVIDO
+- **Onde:** `application.yml`, `JwtService.kt`, `SecurityConfig.kt`
+- **Problema:** Secret default visível no código; se < 32 bytes, faz padding com zeros; lógica duplicada em 2 locais
+- **Solução aplicada (4 pontos):**
+  1. **Bean centralizado** (`JwtKeyConfig`): `SecretKeySpec` criada uma vez, injetada em `JwtService` (assinar) e `jwtDecoder` (validar). Responsabilidades preservadas, chave unificada. Facilita migração futura para Authorization Server externo
+  2. **Fail fast**: `require(keyBytes.size >= 32)` — app não sobe se secret fraco. Sem padding silencioso
+  3. **Profiles Spring**: `application-dev.yml` com overrides de dev (swagger público). Em prod, default seguro. Controlado por `SPRING_PROFILES_ACTIVE=dev` no compose
+  4. **Removido boolean solto**: `SPRINGDOC_PUBLIC_ACCESS` env var eliminada; swagger controlado pelo profile
+- **JWT_SECRET** obrigatório via `.env` (sem default no yml); `.env.example` tem valor dev-ready
 
 ### C4. `.get()` unsafe no AuthController
 - **Onde:** `AuthController.kt:40,64`

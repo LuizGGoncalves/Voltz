@@ -2,7 +2,6 @@ package com.treinamento.clientes.config
 
 import com.fasterxml.jackson.databind.ObjectMapper
 import com.treinamento.clientes.security.JwtAuthenticationConverter
-import com.treinamento.clientes.security.JwtProperties
 import org.springframework.beans.factory.annotation.Value
 import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration
@@ -27,7 +26,6 @@ import javax.crypto.spec.SecretKeySpec
 
 @Configuration
 class SecurityConfig(
-    private val jwtProperties: JwtProperties,
     private val jwtAuthenticationConverter: JwtAuthenticationConverter,
     private val objectMapper: ObjectMapper,
     @Value("\${springdoc.swagger-ui.public-access:false}")
@@ -45,8 +43,7 @@ class SecurityConfig(
                     .requestMatchers("/api/v1/auth/**").permitAll()
                     .requestMatchers("/actuator/health").permitAll()
                     .requestMatchers("/api/v1/integracoes/viacep/status").permitAll()
-                    // Swagger: público em dev (agilidade), protegido em prod (segurança).
-                    // Controlado por springdoc.swagger-ui.public-access (default: false = protegido).
+                    // Swagger: público em dev (profile), protegido em prod (default).
                     .apply {
                         val swagger = requestMatchers("/swagger-ui/**", "/v3/api-docs/**", "/swagger-ui.html")
                         if (swaggerPublico) swagger.permitAll() else swagger.authenticated()
@@ -77,12 +74,8 @@ class SecurityConfig(
             .build()
 
     @Bean
-    fun jwtDecoder(): JwtDecoder {
-        val keyBytes = jwtProperties.secret.toByteArray()
-        val padded = if (keyBytes.size < 32) keyBytes.copyOf(32) else keyBytes
-        val secretKey = SecretKeySpec(padded, "HmacSHA256")
-        return NimbusJwtDecoder.withSecretKey(secretKey).macAlgorithm(MacAlgorithm.HS256).build()
-    }
+    fun jwtDecoder(jwtSecretKey: SecretKeySpec): JwtDecoder =
+        NimbusJwtDecoder.withSecretKey(jwtSecretKey).macAlgorithm(MacAlgorithm.HS256).build()
 
     @Bean
     fun passwordEncoder(): PasswordEncoder = BCryptPasswordEncoder()

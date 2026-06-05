@@ -20,13 +20,13 @@ services:
       context: ./backend
       target: dev
     environment:
+      SPRING_PROFILES_ACTIVE: dev
       SPRING_DATASOURCE_URL: jdbc:postgresql://db:5432/${POSTGRES_DB:-gestao_clientes}
       SPRING_DATASOURCE_USERNAME: ${POSTGRES_USER:-app}
       SPRING_DATASOURCE_PASSWORD: ${POSTGRES_PASSWORD:-troque-esta-senha}
-      JWT_SECRET: ${JWT_SECRET:-dev-secret-nao-usar-em-producao-256bits-minimo!!}
+      JWT_SECRET: ${JWT_SECRET}
       JWT_ACCESS_EXPIRATION_MS: ${JWT_ACCESS_EXPIRATION_MS:-900000}
       JWT_REFRESH_EXPIRATION_MS: ${JWT_REFRESH_EXPIRATION_MS:-604800000}
-      SPRINGDOC_PUBLIC_ACCESS: ${SPRINGDOC_PUBLIC_ACCESS:-true}
     volumes:
       - ./backend/src:/app/src
       - maven-cache:/root/.m2

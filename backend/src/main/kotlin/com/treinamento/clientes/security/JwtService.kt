@@ -12,15 +12,12 @@ import java.util.*
 import javax.crypto.spec.SecretKeySpec
 
 @Service
-class JwtService(private val jwtProperties: JwtProperties) {
+class JwtService(
+    private val jwtSecretKey: SecretKeySpec,
+    private val jwtProperties: JwtProperties
+) {
 
-    private val secretKey: SecretKeySpec by lazy {
-        val keyBytes = jwtProperties.secret.toByteArray()
-        val padded = if (keyBytes.size < 32) keyBytes.copyOf(32) else keyBytes
-        SecretKeySpec(padded, "HmacSHA256")
-    }
-
-    private val signer by lazy { MACSigner(secretKey) }
+    private val signer by lazy { MACSigner(jwtSecretKey) }
 
     fun gerarAccessToken(username: String, authorities: Collection<GrantedAuthority>): String {
         val now = Instant.now()
