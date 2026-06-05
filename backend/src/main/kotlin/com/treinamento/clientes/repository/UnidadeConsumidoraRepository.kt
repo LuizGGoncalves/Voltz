@@ -6,4 +6,6 @@ import org.springframework.data.jpa.repository.JpaRepository
 interface UnidadeConsumidoraRepository : JpaRepository<UnidadeConsumidora, Long> {
 
     fun existsByNumeroInstalacaoAndAtivoTrue(numeroInstalacao: String): Boolean
+
+    fun findByClienteIdAndAtivoTrue(clienteId: Long): List<UnidadeConsumidora>
 }

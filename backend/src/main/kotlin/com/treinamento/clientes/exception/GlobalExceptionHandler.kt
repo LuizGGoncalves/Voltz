@@ -17,6 +17,10 @@ class GlobalExceptionHandler {
     fun handleNotFound(ex: ClienteNaoEncontradoException): ProblemDetail =
         ProblemDetail.forStatusAndDetail(HttpStatus.NOT_FOUND, ex.message!!)
 
+    @ExceptionHandler(UcNaoEncontradaException::class)
+    fun handleUcNotFound(ex: UcNaoEncontradaException): ProblemDetail =
+        ProblemDetail.forStatusAndDetail(HttpStatus.NOT_FOUND, ex.message!!)
+
     @ExceptionHandler(DocumentoDuplicadoException::class)
     fun handleConflict(ex: DocumentoDuplicadoException): ProblemDetail =
         ProblemDetail.forStatusAndDetail(HttpStatus.CONFLICT, ex.message!!)

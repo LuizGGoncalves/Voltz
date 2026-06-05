@@ -5,7 +5,7 @@ import org.hibernate.annotations.SQLDelete
 
 @Entity
 @Table(name = "unidade_consumidora")
-@SQLDelete(sql = "UPDATE unidade_consumidora SET ativo = false WHERE id = ?")
+@SQLDelete(sql = "UPDATE unidade_consumidora SET ativo = false WHERE id = ? AND version = ?")
 class UnidadeConsumidora(
 
     @Id
@@ -35,5 +35,8 @@ class UnidadeConsumidora(
     var cliente: Cliente? = null,
 
     @Column(nullable = false)
-    var ativo: Boolean = true
+    var ativo: Boolean = true,
+
+    @Version
+    var version: Long = 0
 )

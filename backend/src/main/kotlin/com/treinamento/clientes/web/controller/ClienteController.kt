@@ -40,7 +40,7 @@ class ClienteController(
     @PutMapping("/{id}")
     fun atualizar(
         @PathVariable id: Long,
-        @Valid @RequestBody request: ClienteRequest
+        @Valid @RequestBody request: ClienteUpdateRequest
     ): ResponseEntity<ClienteResponse> {
         val cliente = clienteService.atualizar(id, request)
         return ResponseEntity.ok(cliente.toResponse())

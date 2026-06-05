@@ -22,6 +22,18 @@ data class ClienteRequest(
     val unidadesConsumidoras: List<UnidadeConsumidoraRequest>
 )
 
+data class ClienteUpdateRequest(
+    @field:NotBlank(message = "Nome é obrigatório")
+    @field:Size(max = 255)
+    val nome: String,
+
+    @field:NotBlank(message = "Documento é obrigatório")
+    val documento: String,
+
+    @field:Valid
+    val endereco: EnderecoRequest
+)
+
 data class ClienteResponse(
     val id: Long,
     val nome: String,

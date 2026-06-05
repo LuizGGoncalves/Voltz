@@ -3,13 +3,13 @@ package com.treinamento.clientes.service
 import com.treinamento.clientes.domain.event.AnaliseClienteMgEvent
 import com.treinamento.clientes.domain.model.Cliente
 import com.treinamento.clientes.domain.model.Endereco
-import com.treinamento.clientes.domain.model.UnidadeConsumidora
 import com.treinamento.clientes.domain.vo.Documento
 import com.treinamento.clientes.exception.*
 import com.treinamento.clientes.integration.viacep.ViaCepService
 import com.treinamento.clientes.repository.ClienteRepository
 import com.treinamento.clientes.repository.UnidadeConsumidoraRepository
 import com.treinamento.clientes.web.dto.ClienteRequest
+import com.treinamento.clientes.web.dto.ClienteUpdateRequest
 import com.treinamento.clientes.web.mapper.toModel
 import org.slf4j.LoggerFactory
 import org.springframework.context.ApplicationEventPublisher
@@ -87,7 +87,7 @@ class ClienteService(
     }
 
     @Transactional
-    fun atualizar(id: Long, request: ClienteRequest): Cliente {
+    fun atualizar(id: Long, request: ClienteUpdateRequest): Cliente {
         val cliente = clienteRepository.findByIdWithUCs(id)
             .orElseThrow { ClienteNaoEncontradoException(id) }
         val documento = validarDocumento(request.documento)
@@ -96,48 +96,14 @@ class ClienteService(
             validarDocumentoUnico(documento.valor)
         }
 
-        val instalacoesProprias = cliente.unidadesConsumidoras
-            .filter { it.ativo }
-            .map { it.numeroInstalacao }
-            .toSet()
-        val novasInstalacoes = request.unidadesConsumidoras.map { it.numeroInstalacao }
-        val instalacoesExternas = novasInstalacoes.filterNot { it in instalacoesProprias }
-        validarInstalacoesUnicas(instalacoesExternas)
-
         cliente.nome = request.nome
         cliente.documento = documento
 
-        // Enriquecer endereço do cliente
         val enderecoCliente = viaCepService.consultar(request.endereco.cep)
         cliente.endereco = request.endereco.toModel()
         enriquecerEndereco(cliente.endereco, enderecoCliente)
 
-        // Sincronizar UCs: atualizar existentes e adicionar novas
-        val ucsExistentes = cliente.unidadesConsumidoras.associateBy { it.numeroInstalacao }.toMutableMap()
-        val ucsAtualizadas = mutableListOf<UnidadeConsumidora>()
-
-        request.unidadesConsumidoras.forEachIndexed { i, ucReq ->
-            val enderecoUc = viaCepService.consultar(ucReq.endereco.cep)
-            val ucExistente = ucsExistentes.remove(ucReq.numeroInstalacao)
-
-            if (ucExistente != null) {
-                ucExistente.nome = ucReq.nome
-                ucExistente.endereco = ucReq.endereco.toModel()
-                enriquecerEndereco(ucExistente.endereco, enderecoUc)
-                ucsAtualizadas.add(ucExistente)
-            } else {
-                val novaUc = ucReq.toModel()
-                enriquecerEndereco(novaUc.endereco, enderecoUc)
-                novaUc.cliente = cliente
-                ucsAtualizadas.add(novaUc)
-            }
-        }
-
-        // Remover UCs que não estão mais no request (orphanRemoval cuida do soft delete)
-        cliente.unidadesConsumidoras.clear()
-        cliente.unidadesConsumidoras.addAll(ucsAtualizadas)
-
-        return finalizarCadastro(cliente)
+        return clienteRepository.save(cliente)
     }
 
     @Transactional(readOnly = true)
