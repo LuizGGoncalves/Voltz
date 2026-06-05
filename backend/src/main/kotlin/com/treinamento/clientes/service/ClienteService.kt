@@ -116,9 +116,14 @@ class ClienteService(
         clienteRepository.findByIdWithUCs(id) ?: throw ClienteNaoEncontradoException(id)
 
     @Transactional(readOnly = true)
-    fun listar(pageable: Pageable, incluirInativos: Boolean = false): Page<Cliente> =
-        if (incluirInativos) clienteRepository.findAll(pageable)
-        else clienteRepository.findAllByAtivoTrue(pageable)
+    fun listar(pageable: Pageable, filtroStatus: String? = null, incluirInativos: Boolean = false): Page<Cliente> =
+        when (filtroStatus?.lowercase()) {
+            "ativos" -> clienteRepository.findAllByAtivoTrue(pageable)
+            "inativos" -> clienteRepository.findAllByAtivoFalse(pageable)
+            "todos" -> clienteRepository.findAll(pageable)
+            else -> if (incluirInativos) clienteRepository.findAll(pageable)
+                    else clienteRepository.findAllByAtivoTrue(pageable)
+        }
 
     @Transactional(readOnly = true)
     fun ultimos20(): Page<Cliente> =

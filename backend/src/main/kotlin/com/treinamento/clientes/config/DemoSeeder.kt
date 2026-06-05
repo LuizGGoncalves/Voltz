@@ -49,6 +49,7 @@ class DemoSeeder(
 
     private fun criarClientes(): List<Cliente> {
         val dados = listOf(
+            // 0-14: originais
             Triple("Maria Clara Oliveira", "52998224725", endereco("30130000", "Av. Afonso Pena", "1500", "Sala 301", "Centro", "Belo Horizonte", "MG")),
             Triple("João Pedro Santos", "11144477735", endereco("20040020", "Av. Rio Branco", "156", "12º andar", "Centro", "Rio de Janeiro", "RJ")),
             Triple("Ana Beatriz Ferreira", "98765432000187", endereco("01310100", "Av. Paulista", "1000", "Conjunto 51", "Bela Vista", "São Paulo", "SP")),
@@ -64,18 +65,48 @@ class DemoSeeder(
             Triple("Camila Rodrigues Andrade", "36985214700", endereco("30130001", "Rua Espírito Santo", "605", "Sala 12", "Centro", "Belo Horizonte", "MG")),
             Triple("Marcos Vinícius Teixeira", "25836914700", endereco("40060200", "Av. Sete de Setembro", "240", null, "Vitória", "Salvador", "BA")),
             Triple("Energia Verde SA", "78912345000166", endereco("30140072", "Rua Guajajaras", "910", "Térreo", "Centro", "Belo Horizonte", "MG")),
+            // 15-29: mais clientes
+            Triple("Beatriz Helena Costa", "74185296300", endereco("30130010", "Rua Carijós", "250", null, "Centro", "Belo Horizonte", "MG")),
+            Triple("Distribuidora Mineira Ltda", "11223344000155", endereco("30140080", "Av. Augusto de Lima", "479", "Loja 2", "Centro", "Belo Horizonte", "MG")),
+            Triple("Henrique Dias Barbosa", "96385274100", endereco("20040025", "Rua da Assembleia", "10", "Sala 601", "Centro", "Rio de Janeiro", "RJ")),
+            Triple("Larissa Souza Moreira", "15935748200", endereco("30120070", "Rua São Paulo", "900", null, "Centro", "Belo Horizonte", "MG")),
+            Triple("Pedro Augusto Ramos", "35795148200", endereco("40060300", "Rua Marquês de Caravelas", "60", null, "Vitória", "Salvador", "BA")),
+            Triple("Empresa Norte Energia SA", "99887766000111", endereco("66010000", "Av. Presidente Vargas", "882", null, "Campina", "Belém", "PA")),
+            Triple("Raquel Fernandes Lima", "95175385200", endereco("30130020", "Rua Tamoios", "341", "Apt 502", "Centro", "Belo Horizonte", "MG")),
+            Triple("Diego Silva Fonseca", "75315985200", endereco("60060450", "Rua Guilherme Rocha", "381", null, "Centro", "Fortaleza", "CE")),
+            Triple("Viviane Monteiro Cruz", "84268135200", endereco("30140085", "Rua Goitacazes", "14", "5º andar", "Centro", "Belo Horizonte", "MG")),
+            Triple("Transenergia Group Ltda", "55667788000199", endereco("20040028", "Rua Primeiro de Março", "23", null, "Centro", "Rio de Janeiro", "RJ")),
+            Triple("Guilherme Batista Nogueira", "42536879100", endereco("70040015", "SQS Quadra 308", "Bloco A", null, "Asa Sul", "Brasília", "DF")),
+            Triple("Thiago Costa Almeida", "63852741900", endereco("30130025", "Rua Curitiba", "832", null, "Centro", "Belo Horizonte", "MG")),
+            Triple("Aline Cardoso Pinto", "15975348600", endereco("40020010", "Rua da Grécia", "45", null, "Comércio", "Salvador", "BA")),
+            Triple("Renata Vieira Santos", "74125896300", endereco("30130030", "Av. Santos Dumont", "111", "Sala 8", "Centro", "Belo Horizonte", "MG")),
+            Triple("Fotovoltaica Sul Ltda", "33445566000122", endereco("80010010", "Rua XV de Novembro", "700", "4º andar", "Centro", "Curitiba", "PR")),
+            // 30-41: mais clientes
+            Triple("Simone Aguiar Lopes", "12478536900", endereco("30180015", "Rua Aimorés", "1451", null, "Funcionários", "Belo Horizonte", "MG")),
+            Triple("Bruno Carvalho Dias", "96374185200", endereco("20040035", "Av. Almirante Barroso", "90", "14º andar", "Centro", "Rio de Janeiro", "RJ")),
+            Triple("Priscila Moura Tavares", "25836974100", endereco("30120080", "Rua Sergipe", "1440", null, "Savassi", "Belo Horizonte", "MG")),
+            Triple("Helena Torres Aguiar", "36974185200", endereco("60060460", "Rua Senador Pompeu", "649", null, "Centro", "Fortaleza", "CE")),
+            Triple("Elétrica Nordeste SA", "66778899000133", endereco("50010000", "Av. Guararapes", "300", null, "Santo Antônio", "Recife", "PE")),
+            Triple("Alexandre Duarte Mendes", "85296374100", endereco("30140090", "Rua dos Guaranis", "420", "Cobertura", "Centro", "Belo Horizonte", "MG")),
+            Triple("Daniela Rezende Araújo", "74185236900", endereco("22041085", "Rua São Clemente", "258", null, "Botafogo", "Rio de Janeiro", "RJ")),
+            Triple("Márcio Lopes Ferreira", "63741852900", endereco("40020015", "Rua Portugal", "150", "Sala 3", "Comércio", "Salvador", "BA")),
+            Triple("Consultoria Volt Ltda", "88990011000177", endereco("30130035", "Rua Tamóios", "620", "9º andar", "Centro", "Belo Horizonte", "MG")),
+            Triple("Carolina Nunes Pereira", "14736925800", endereco("70040020", "CLN 308", "Bloco D", "Loja 42", "Asa Norte", "Brasília", "DF")),
+            Triple("Victor Hugo Monteiro", "96385214700", endereco("30120085", "Rua Rio Grande do Norte", "1100", null, "Savassi", "Belo Horizonte", "MG")),
+            Triple("SmartGrid Solutions SA", "44556677000188", endereco("04101305", "Rua Vergueiro", "1855", "12º andar", "Vila Mariana", "São Paulo", "SP")),
         )
 
-        return dados.mapIndexed { i, (nome, doc, end) ->
+        val inativos = setOf(2, 11, 17, 24, 27, 29, 34, 37, 38, 41) // 10 inativos
+
+        return dados.map { (nome, doc, end) ->
             clienteRepository.save(
                 Cliente(nome = nome, documento = Documento.fromDatabase(doc), endereco = end)
             )
-        }.also {
-            // Inativar alguns clientes para demo
-            it[2].ativo = false // Ana Beatriz (SP)
-            clienteRepository.save(it[2])
-            it[11].ativo = false // Ricardo (RJ)
-            clienteRepository.save(it[11])
+        }.also { list ->
+            inativos.forEach { idx ->
+                list[idx].ativo = false
+                clienteRepository.save(list[idx])
+            }
         }
     }
 

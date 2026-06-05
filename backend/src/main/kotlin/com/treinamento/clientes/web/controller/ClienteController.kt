@@ -55,9 +55,10 @@ class ClienteController(
     @GetMapping
     fun listar(
         @PageableDefault(size = 20, sort = ["nome"]) pageable: Pageable,
+        @RequestParam(required = false) filtroStatus: String?,
         @RequestParam(defaultValue = "false") incluirInativos: Boolean
     ): ResponseEntity<Page<ClienteResumoResponse>> {
-        val page = clienteService.listar(pageable, incluirInativos).map { it.toResumoResponse() }
+        val page = clienteService.listar(pageable, filtroStatus, incluirInativos).map { it.toResumoResponse() }
         return ResponseEntity.ok(page)
     }
 

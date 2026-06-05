@@ -25,10 +25,10 @@ export class ClienteService {
     return this.http.get<Cliente>(`${this.baseUrl}/${id}`);
   }
 
-  listar(page = 0, size = 20, incluirInativos = false): Observable<Page<ClienteResumo>> {
+  listar(page = 0, size = 20, filtroStatus = 'ativos'): Observable<Page<ClienteResumo>> {
     const params = new HttpParams()
       .set('page', page).set('size', size)
-      .set('incluirInativos', incluirInativos);
+      .set('filtroStatus', filtroStatus);
     return this.http.get<Page<ClienteResumo>>(this.baseUrl, { params });
   }
 

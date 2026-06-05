@@ -7,7 +7,7 @@ import { MatTableModule } from '@angular/material/table';
 import { MatPaginatorModule, PageEvent } from '@angular/material/paginator';
 import { MatButtonModule } from '@angular/material/button';
 import { MatIconModule } from '@angular/material/icon';
-import { MatSlideToggleModule } from '@angular/material/slide-toggle';
+import { MatButtonToggleModule } from '@angular/material/button-toggle';
 import { MatSnackBar, MatSnackBarModule } from '@angular/material/snack-bar';
 import { MatTooltipModule } from '@angular/material/tooltip';
 import { MatFormFieldModule } from '@angular/material/form-field';
@@ -27,7 +27,7 @@ import {
   imports: [
     CommonModule, RouterModule, FormsModule,
     MatTableModule, MatPaginatorModule, MatButtonModule, MatIconModule,
-    MatSlideToggleModule, MatSnackBarModule, MatTooltipModule,
+    MatButtonToggleModule, MatSnackBarModule, MatTooltipModule,
     MatFormFieldModule, MatInputModule, MatDialogModule,
     DocumentoPipe, StatusBadgeComponent, EmptyStateComponent,
     SkeletonComponent, AvatarComponent
@@ -35,13 +35,15 @@ import {
   template: `
     <div class="page-header">
       <div class="header-left">
-        <div class="header-actions">
-          <mat-form-field appearance="outline" class="search-field" subscriptSizing="dynamic">
-            <mat-icon matPrefix>search</mat-icon>
-            <input matInput placeholder="Buscar por nome ou documento..." [(ngModel)]="busca" (input)="onBusca()">
-          </mat-form-field>
-          <mat-slide-toggle [(ngModel)]="incluirInativos" (change)="carregar()">Incluir inativos</mat-slide-toggle>
-        </div>
+        <mat-form-field appearance="outline" class="search-field" subscriptSizing="dynamic">
+          <mat-icon matPrefix>search</mat-icon>
+          <input matInput placeholder="Buscar por nome ou documento..." [(ngModel)]="busca" (input)="onBusca()">
+        </mat-form-field>
+        <mat-button-toggle-group [(ngModel)]="filtroStatus" (change)="onFiltroChange()">
+          <mat-button-toggle value="ativos">Ativos</mat-button-toggle>
+          <mat-button-toggle value="inativos">Inativos</mat-button-toggle>
+          <mat-button-toggle value="todos">Todos</mat-button-toggle>
+        </mat-button-toggle-group>
       </div>
       <a mat-raised-button color="primary" routerLink="/clientes/novo">
         <mat-icon>add</mat-icon> Novo Cliente
@@ -58,7 +60,7 @@ import {
     } @else if (clientesFiltrados().length === 0) {
       <app-empty-state icon="people_outline"
         [title]="busca ? 'Nenhum resultado' : 'Nenhum cliente'"
-        [subtitle]="busca ? 'Tente outro termo de busca.' : 'Crie o primeiro cliente para começar.'" />
+        [subtitle]="busca ? 'Tente outro termo de busca.' : 'Nenhum cliente encontrado com esse filtro.'" />
     } @else {
       <div class="table-card">
         <div class="card-header">
@@ -119,11 +121,17 @@ import {
       gap: 16px;
       flex-wrap: wrap;
     }
-    .header-left { display: flex; align-items: center; gap: 16px; flex: 1; }
-    .header-actions { display: flex; align-items: center; gap: 16px; flex: 1; }
-    .search-field {
-      max-width: 360px;
+    .header-left {
+      display: flex;
+      align-items: center;
+      gap: 16px;
       flex: 1;
+      flex-wrap: wrap;
+    }
+    .search-field {
+      max-width: 340px;
+      flex: 1;
+      min-width: 200px;
       mat-icon { color: var(--text-faint); margin-right: 4px; }
     }
 
@@ -166,7 +174,7 @@ export class ClienteListaComponent implements OnInit {
   loading = signal(false);
   erro = signal<string | null>(null);
   page = 0;
-  incluirInativos = false;
+  filtroStatus = 'ativos';
   busca = '';
   colunas = ['nome', 'status', 'createdAt', 'acoes'];
 
@@ -181,7 +189,7 @@ export class ClienteListaComponent implements OnInit {
   carregar() {
     this.loading.set(true);
     this.erro.set(null);
-    this.clienteService.listar(this.page, 20, this.incluirInativos)
+    this.clienteService.listar(this.page, 20, this.filtroStatus)
       .pipe(takeUntilDestroyed(this.destroyRef))
       .subscribe({
         next: p => {
@@ -196,18 +204,21 @@ export class ClienteListaComponent implements OnInit {
 
   onPage(e: PageEvent) { this.page = e.pageIndex; this.carregar(); }
 
+  onFiltroChange() { this.page = 0; this.carregar(); }
+
   onBusca() { this.filtrar(); }
 
   private filtrar() {
-    const termo = this.busca.toLowerCase().replace(/\D/g, '') || this.busca.toLowerCase();
+    const termo = this.busca.toLowerCase();
+    const termoDigitos = this.busca.replace(/\D/g, '');
     if (!termo) {
       this.clientesFiltrados.set(this.clientes());
       return;
     }
     this.clientesFiltrados.set(
       this.clientes().filter(c =>
-        c.nome.toLowerCase().includes(this.busca.toLowerCase()) ||
-        c.documento.includes(termo)
+        c.nome.toLowerCase().includes(termo) ||
+        (termoDigitos && c.documento.includes(termoDigitos))
       )
     );
   }
