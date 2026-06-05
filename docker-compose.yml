@@ -27,6 +27,7 @@ services:
       JWT_SECRET: ${JWT_SECRET}
       JWT_ACCESS_EXPIRATION_MS: ${JWT_ACCESS_EXPIRATION_MS:-900000}
       JWT_REFRESH_EXPIRATION_MS: ${JWT_REFRESH_EXPIRATION_MS:-604800000}
+      APP_DEMO_SEED: ${APP_DEMO_SEED:-false}
     volumes:
       - ./backend/src:/app/src
       - maven-cache:/root/.m2

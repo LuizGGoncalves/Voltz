@@ -1,4 +1,4 @@
-# Documentação Técnica — Gestão de Clientes
+# Documentação Técnica — Voltz (Gestão de Clientes)
 
 > Documento completo de referência técnica. Para visão geral do produto, ver [`README.md`](README.md).
 
@@ -39,6 +39,8 @@ erDiagram
         bigint cliente_id FK
         boolean ativo "soft delete"
         bigint version "optimistic lock"
+        timestamptz created_at
+        timestamptz updated_at
     }
     CADASTRO_PENDENTE {
         bigint id PK
@@ -72,7 +74,7 @@ erDiagram
     REFRESH_TOKEN {
         bigint id PK
         bigint usuario_id FK
-        varchar token_hash "SHA-256"
+        varchar token_hash "HMAC-SHA256"
         timestamptz expira_em
         boolean revogado
     }
@@ -101,6 +103,7 @@ UNIQUE(documento) WHERE status = 'PENDENTE'    -- cadastro_pendente
 | V2 | Fix hash BCrypt do admin |
 | V3 | Adicionar `version` na unidade_consumidora |
 | V4 | Tabela `auditoria_documento` |
+| V5 | Adicionar `created_at`/`updated_at` na unidade_consumidora |
 
 ---
 
@@ -198,7 +201,7 @@ sequenceDiagram
 | Issuer | `JwtIssuerValidator("gestao-clientes-api")` | Segregação entre sistemas |
 | Cookie | httpOnly + secure(request.isSecure) + SameSite | XSS + MITM |
 | Senha | BCrypt | Hash irreversível |
-| Refresh | SHA-256 hash + revogação + rotação | Roubo de token |
+| Refresh | HMAC-SHA256 hash + revogação + rotação | Roubo de token |
 | Concorrência | `@Version` (optimistic locking) | Lost update |
 
 ### Profiles
@@ -367,15 +370,31 @@ graph TD
 | Functional guard | `authGuard` tenta refresh antes de redirecionar |
 | Functional interceptor | `authInterceptor` injeta Bearer (exceto ViaCEP externo) |
 | Reactive Forms | FormBuilder + FormGroup + Validators |
-| Shared components | StatusBadge, EmptyState, EnderecoForm, DocumentoPipe |
+| Shared components | Avatar, StatusBadge, EmptyState, EnderecoForm, Callout, Skeleton, ConfirmDialog |
 | takeUntilDestroyed | Cleanup automático de subscriptions |
+| Design System tokens | Todas as cores/sombras/raios via CSS custom properties (nunca hex solto) |
+| Tema claro/escuro | `data-theme` no HTML + ThemeService + localStorage |
+
+### Design System — Bolt Energy
+| Token | Uso |
+|-------|-----|
+| `--bolt-500` | Primária (botões, nav ativo, foco) |
+| `--accent-500` | Secundária menta (indicadores, realces) |
+| `--ok-bg/fg` | Status ativo/processado |
+| `--warn-bg/fg` | Status pendente |
+| `--danger-bg/fg` | Status inativo/rejeitado |
+| `--crit-bg/fg` | Status falha |
+| `--surface`, `--bg` | Superfícies e fundo da página |
+| `--sidebar` | Menu lateral (sempre escuro) |
+
+Fontes: **Space Grotesk** (títulos) + **Manrope** (corpo). Tema escuro inverte todas as variáveis via `[data-theme="dark"]`.
 
 ### Estados de UI (todas as listas)
 ```
-loading → mat-spinner
+loading → SkeletonComponent (shimmer)
 error   → EmptyState com ícone error_outline
-empty   → EmptyState com mensagem contextual
-data    → tabela Material com paginação
+empty   → EmptyState com título + subtítulo contextual
+data    → tabela Material em card com header + count badge + paginação
 ```
 
 ---
@@ -405,6 +424,7 @@ data    → tabela Material com paginação
 | `POSTGRES_DB/USER/PASSWORD` | Credenciais do banco | Sim |
 | `JWT_ACCESS_EXPIRATION_MS` | Expiração do access (default 15min) | Não |
 | `JWT_REFRESH_EXPIRATION_MS` | Expiração do refresh (default 7d) | Não |
+| `APP_DEMO_SEED` | Carregar dados demo no startup (`true`/`false`) | Não |
 
 ### Profiles Spring
 | Profile | Ativação | Comportamento |
@@ -466,3 +486,58 @@ Destaques das correções:
 - **R1-R6**: Refatorações arquiteturais (DRY, service layer, componentização)
 
 Todos os 15 riscos do plano original foram mitigados. Detalhes em commits com prefixo `fix(C*/A*/M*/R*)`.
+
+---
+
+## 9. Correções de boas práticas (pós-auditoria)
+
+Análise adicional contra padrões oficiais Spring Boot + Kotlin identificou e corrigiu:
+
+### Severidade alta
+| Item | Antes | Depois | Arquivo |
+|------|-------|--------|---------|
+| Refresh token hash | SHA-256 puro (rainbow table) | **HMAC-SHA256** com chave JWT | `RefreshTokenService.kt` |
+| Retry job transação | Batch-level (inconsistência) | **TransactionTemplate** por item | `RetryCadastroJob.kt` |
+
+### Severidade média
+| Item | Correção | Arquivo |
+|------|----------|---------|
+| Exceção errada | Criada `CadastroPendenteNaoEncontradoException` | `BusinessExceptions.kt` |
+| Enriquecimento DRY | `Endereco.enriquecerCom()` (era duplicado em 3 services) | `Endereco.kt` |
+| UC sem timestamps | Adicionado `createdAt`/`updatedAt` + migration V5 | `UnidadeConsumidora.kt` |
+
+### Severidade baixa
+| Item | Correção |
+|------|----------|
+| `!!` non-null assertions | Substituído por `requireNotNull()` com mensagens |
+| `ex.message!!` | Substituído por `ex.message.orEmpty()` |
+| `Optional<T>` nos repos | Padronizado para `T?` (Kotlin idiomático) |
+| `@EnableJpaAuditing` | Já existia — confirmado |
+
+---
+
+## 10. Seeder de demonstração
+
+Classe `DemoSeeder` (`config/DemoSeeder.kt`) — `ApplicationRunner` condicional.
+
+**Ativação:** `APP_DEMO_SEED=true` (variável de ambiente ou property).
+**Idempotente:** Só roda se `clienteRepository.count() == 0`.
+
+### Dados criados
+
+| Entidade | Qtd | Detalhe |
+|----------|-----|---------|
+| Clientes | 10 | 9 ativos + 1 inativo (SP). CPFs e CNPJs reais (válidos em estrutura). Cidades: BH, RJ, SP, Salvador, Brasília, Fortaleza |
+| UCs | 13 | Distribuídas entre clientes. 5 em MG (geram análises), restante em RJ, BA, DF, CE |
+| Pendentes | 5 | 1 PENDENTE, 2 REJEITADO (PR e SP), 1 PROCESSADO, 1 FALHA (TTL) |
+| Análises MG | 5 | Todas PENDENTE_ANALISE, vinculadas às UCs em MG |
+
+### O que cada tela mostra com o seeder
+
+| Tela | O que aparece |
+|------|---------------|
+| Lista de Clientes | 9 clientes ativos com avatares, busca funcional, toggle mostra o inativo |
+| Detalhe | Clientes com 1-3 UCs em cards, endereços completos |
+| Novo Cliente | Formulário vazio pronto para criar |
+| Pendentes | 5 registros nos 4 status possíveis (todos os filtros funcionam) |
+| Análises MG | 5 registros com links para os clientes |

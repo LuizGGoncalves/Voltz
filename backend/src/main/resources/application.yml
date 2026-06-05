@@ -44,6 +44,9 @@ springdoc:
   swagger-ui:
     public-access: false
 
+app:
+  demo-seed: ${APP_DEMO_SEED:false}
+
 management:
   endpoints:
     web:
