@@ -4,6 +4,7 @@ import com.treinamento.clientes.domain.event.AnaliseClienteMgEvent
 import com.treinamento.clientes.domain.model.Cliente
 import com.treinamento.clientes.domain.model.Endereco
 import com.treinamento.clientes.domain.vo.Documento
+import com.treinamento.clientes.domain.rules.UfRules
 import com.treinamento.clientes.exception.*
 import com.treinamento.clientes.security.SecurityUtils
 import com.treinamento.clientes.integration.viacep.ViaCepService
@@ -34,10 +35,6 @@ class ClienteService(
 
     private val log = LoggerFactory.getLogger(javaClass)
 
-    companion object {
-        val UFS_BLOQUEADAS = setOf("SP", "RS", "PR")
-        const val UF_EVENTO_MG = "MG"
-    }
 
     @Transactional
     fun criar(request: ClienteRequest): Cliente {
@@ -69,7 +66,7 @@ class ClienteService(
         // Regra de UF nas UCs
         cliente.unidadesConsumidoras.forEach { uc ->
             val uf = uc.endereco.uf.uppercase()
-            if (uf in UFS_BLOQUEADAS) {
+            if (uf in UfRules.BLOQUEADAS) {
                 throw UfBloqueadaException(uf, uc.nome)
             }
         }
@@ -78,7 +75,7 @@ class ClienteService(
 
         // Evento MG — publicado APÓS o save (listener roda after commit)
         salvo.unidadesConsumidoras.forEach { uc ->
-            if (uc.endereco.uf.uppercase() == UF_EVENTO_MG) {
+            if (uc.endereco.uf.uppercase() == UfRules.EVENTO_MG) {
                 log.info("UC '{}' em MG — publicando evento analise_cliente_mg", uc.nome)
                 eventPublisher.publishEvent(
                     AnaliseClienteMgEvent(

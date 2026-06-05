@@ -3,6 +3,7 @@ package com.treinamento.clientes.service
 import com.treinamento.clientes.domain.event.AnaliseClienteMgEvent
 import com.treinamento.clientes.domain.model.Endereco
 import com.treinamento.clientes.domain.model.UnidadeConsumidora
+import com.treinamento.clientes.domain.rules.UfRules
 import com.treinamento.clientes.exception.ClienteNaoEncontradoException
 import com.treinamento.clientes.exception.InstalacaoDuplicadaException
 import com.treinamento.clientes.exception.UcNaoEncontradaException
@@ -27,10 +28,6 @@ class UnidadeConsumidoraService(
 
     private val log = LoggerFactory.getLogger(javaClass)
 
-    companion object {
-        val UFS_BLOQUEADAS = setOf("SP", "RS", "PR")
-        const val UF_EVENTO_MG = "MG"
-    }
 
     @Transactional
     fun adicionar(clienteId: Long, request: UnidadeConsumidoraRequest): UnidadeConsumidora {
@@ -100,13 +97,13 @@ class UnidadeConsumidoraService(
 
     private fun aplicarRegraUf(uc: UnidadeConsumidora) {
         val uf = uc.endereco.uf.uppercase()
-        if (uf in UFS_BLOQUEADAS) {
+        if (uf in UfRules.BLOQUEADAS) {
             throw UfBloqueadaException(uf, uc.nome)
         }
     }
 
     private fun verificarEventoMg(uc: UnidadeConsumidora, clienteId: Long) {
-        if (uc.endereco.uf.uppercase() == UF_EVENTO_MG) {
+        if (uc.endereco.uf.uppercase() == UfRules.EVENTO_MG) {
             log.info("UC '{}' em MG — publicando evento analise_cliente_mg", uc.nome)
             eventPublisher.publishEvent(
                 AnaliseClienteMgEvent(clienteId = clienteId, unidadeConsumidoraId = uc.id!!)
