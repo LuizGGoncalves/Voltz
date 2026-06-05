@@ -28,13 +28,14 @@ class RetryCadastroJob(
 
     companion object {
         const val MAX_TENTATIVAS = 5
+        const val BATCH_SIZE = 50
         val TTL: Duration = Duration.ofHours(24)
         val BACKOFF_INTERVALS = longArrayOf(1, 2, 4, 8, 16) // minutos
     }
 
     @Scheduled(fixedDelayString = "\${retry.interval-ms:60000}")
     fun processarPendentes() {
-        val pendentes = cadastroPendenteRepository.findPendentesParaRetry()
+        val pendentes = cadastroPendenteRepository.findPendentesParaRetry(BATCH_SIZE)
         if (pendentes.isEmpty()) return
 
         log.info("Retry job: {} pendentes para processar", pendentes.size)

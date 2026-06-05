@@ -73,7 +73,7 @@ class ClienteController(
         @PathVariable id: Long,
         @Valid @RequestBody request: CorrecaoDocumentoRequest
     ): ResponseEntity<ClienteResponse> {
-        val cliente = clienteService.corrigirDocumento(id, request.documento)
+        val cliente = clienteService.corrigirDocumento(id, request.documento, request.motivo)
         return ResponseEntity.ok(cliente.toResponse())
     }
 

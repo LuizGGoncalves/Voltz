@@ -5,7 +5,10 @@ import com.treinamento.clientes.domain.model.Cliente
 import com.treinamento.clientes.domain.model.Endereco
 import com.treinamento.clientes.domain.vo.Documento
 import com.treinamento.clientes.exception.*
+import com.treinamento.clientes.security.SecurityUtils
 import com.treinamento.clientes.integration.viacep.ViaCepService
+import com.treinamento.clientes.domain.model.AuditoriaDocumento
+import com.treinamento.clientes.repository.AuditoriaDocumentoRepository
 import com.treinamento.clientes.repository.ClienteRepository
 import com.treinamento.clientes.repository.UnidadeConsumidoraRepository
 import com.treinamento.clientes.web.dto.ClienteRequest
@@ -25,7 +28,8 @@ class ClienteService(
     private val clienteRepository: ClienteRepository,
     private val ucRepository: UnidadeConsumidoraRepository,
     private val viaCepService: ViaCepService,
-    private val eventPublisher: ApplicationEventPublisher
+    private val eventPublisher: ApplicationEventPublisher,
+    private val auditoriaRepository: AuditoriaDocumentoRepository
 ) {
 
     private val log = LoggerFactory.getLogger(javaClass)
@@ -52,7 +56,9 @@ class ClienteService(
             enriquecerEndereco(uc.endereco, enderecoUc)
         }
 
-        return finalizarCadastro(cliente)
+        val salvo = finalizarCadastro(cliente)
+        log.info("Cliente criado: id={}, user={}", salvo.id, SecurityUtils.currentUsername())
+        return salvo
     }
 
     /**
@@ -103,7 +109,9 @@ class ClienteService(
         cliente.endereco = request.endereco.toModel()
         enriquecerEndereco(cliente.endereco, enderecoCliente)
 
-        return clienteRepository.save(cliente)
+        val salvo = clienteRepository.save(cliente)
+        log.info("Cliente atualizado: id={}, user={}", salvo.id, SecurityUtils.currentUsername())
+        return salvo
     }
 
     @Transactional(readOnly = true)
@@ -120,20 +128,39 @@ class ClienteService(
         clienteRepository.findUltimos20(PageRequest.of(0, 20, Sort.by(Sort.Direction.DESC, "createdAt")))
 
     @Transactional
-    fun corrigirDocumento(id: Long, novoDocumento: String): Cliente {
+    fun corrigirDocumento(id: Long, novoDocumento: String, motivo: String): Cliente {
         val cliente = clienteRepository.findByIdWithUCs(id)
             .orElseThrow { ClienteNaoEncontradoException(id) }
         val documento = validarDocumento(novoDocumento)
-        if (cliente.documento?.valor != documento.valor) {
+        val docAnterior = cliente.documento?.valor ?: ""
+
+        if (docAnterior != documento.valor) {
             validarDocumentoUnico(documento.valor)
         }
+
         cliente.documento = documento
-        return clienteRepository.save(cliente)
+        val salvo = clienteRepository.save(cliente)
+
+        // Auditoria em tabela (M5)
+        auditoriaRepository.save(
+            AuditoriaDocumento(
+                clienteId = id,
+                documentoAnterior = docAnterior,
+                documentoNovo = documento.valor,
+                motivo = motivo,
+                usuario = SecurityUtils.currentUsername()
+            )
+        )
+
+        log.info("Documento corrigido: clienteId={}, de={} para={}, motivo='{}', user={}",
+            id, docAnterior, documento.valor, motivo, SecurityUtils.currentUsername())
+        return salvo
     }
 
     @Transactional
     fun inativar(id: Long) {
         val cliente = buscarOuFalhar(id)
+        log.info("Cliente inativado: id={}, nome={}, user={}", id, cliente.nome, SecurityUtils.currentUsername())
         clienteRepository.delete(cliente)
     }
 

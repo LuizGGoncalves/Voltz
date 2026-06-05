@@ -98,36 +98,23 @@
 
 ## MEDIO — Antes de Produção
 
-### M1. Race condition na dedup da fila (Risco #1 do PLANO)
-- **Onde:** `CadastroPendenteService.enfileirar()`
-- **Problema:** Check-then-insert sem isolation → gap entre verificação e INSERT
-- **Fix:** `SERIALIZABLE` ou `INSERT ON CONFLICT DO NOTHING`
+### ~~M1. Race condition na dedup da fila~~ — RESOLVIDO
+- **Solução:** `INSERT ON CONFLICT DO NOTHING` (Postgres nativo, atômico). Sem gap entre check e insert. Risco #1 PLANO mitigado
 
-### M2. Senha do admin seed exposta em migration + comentário
-- **Onde:** `V1__init.sql:109-110`, `V2__fix_admin_password.sql`
-- **Fix:** Remover comentário com senha; usar script separado para seed
+### ~~M2. Senha admin em migration~~ — ACEITO
+- **Status:** migrations V1/V2 já aplicadas, imutáveis (Flyway checksum). Hash na V1 não é o correto (corrigido na V2). Em prod, seed via script externo + AWS Secrets Manager
 
-### M3. Sem contexto de usuário nos logs de negócio
-- **Onde:** Services e controllers
-- **Problema:** Não registra *quem* criou/editou/inativou (OWASP A09)
-- **Fix:** Injetar `SecurityContextHolder.getContext().authentication.name` nos logs
+### ~~M3. Sem contexto de usuário nos logs~~ — RESOLVIDO
+- **Solução:** `SecurityUtils.currentUsername()` em todos os logs de negócio (criar, atualizar, inativar, corrigir documento). OWASP A09
 
-### M4. Paginação ausente no RetryCadastroJob
-- **Onde:** `RetryCadastroJob.kt:37`
-- **Problema:** `findPendentesParaRetry()` retorna TODOS; se milhares, OOM
-- **Fix:** Adicionar LIMIT/batch size
+### ~~M4. Retry job sem paginação~~ — RESOLVIDO
+- **Solução:** `LIMIT 50` no `findPendentesParaRetry()`. Batch size configurável
 
-### M5. PATCH documento sem auditoria (D15 do PLANO)
-- **Onde:** `ClienteService.corrigirDocumento()`
-- **PLANO:** "re-validação de unicidade + **auditoria** (quem/quando/motivo)"
-- **Atual:** Re-valida, mas não registra quem/quando/motivo
-- **Fix:** Gravar log de auditoria com username, documento antigo/novo, motivo
+### ~~M5. PATCH documento sem auditoria~~ — RESOLVIDO
+- **Solução:** Tabela `auditoria_documento` (V4 migration) com cliente_id, documento_anterior, documento_novo, motivo, usuario, created_at. Gravada automaticamente no `corrigirDocumento()`. Consultável por clienteId
 
-### M6. Dedup de `numero_instalacao` na fila incompleta (Risco #13 do PLANO)
-- **Onde:** `CadastroPendenteService.enfileirar()`
-- **PLANO:** "Extrair instalações para checagem no submit"
-- **Atual:** Só checa documento, não instalações dentro do payload JSON
-- **Fix:** Extrair e validar `numeroInstalacao` do request contra UCs ativas
+### ~~M6. Dedup instalação na fila~~ — RESOLVIDO
+- **Solução:** `CadastroPendenteService.enfileirar()` agora valida `numeroInstalacao` do request contra UCs ativas. Risco #13 PLANO mitigado
 
 ---
 

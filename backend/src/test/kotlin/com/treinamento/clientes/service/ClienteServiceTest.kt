@@ -26,12 +26,13 @@ class ClienteServiceTest {
     private val ucRepository = mockk<UnidadeConsumidoraRepository>()
     private val viaCepService = mockk<ViaCepService>()
     private val eventPublisher = mockk<ApplicationEventPublisher>(relaxed = true)
+    private val auditoriaRepository = mockk<com.treinamento.clientes.repository.AuditoriaDocumentoRepository>(relaxed = true)
 
     private lateinit var service: ClienteService
 
     @BeforeEach
     fun setup() {
-        service = ClienteService(clienteRepository, ucRepository, viaCepService, eventPublisher)
+        service = ClienteService(clienteRepository, ucRepository, viaCepService, eventPublisher, auditoriaRepository)
     }
 
     private fun enderecoMg() = Endereco("30140071", "Rua dos Aimorés", "1", null, "Boa Viagem", "Belo Horizonte", "MG")
