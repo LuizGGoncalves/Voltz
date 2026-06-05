@@ -14,23 +14,23 @@ import { ViaCepService } from '../../../core/services/viacep.service';
   imports: [CommonModule, ReactiveFormsModule, MatFormFieldModule, MatInputModule, MatIconModule, MatProgressSpinnerModule, NgxMaskDirective],
   template: `
     <div [formGroup]="form" class="row">
-      <mat-form-field appearance="outline" class="flex-1">
+      <mat-form-field appearance="outline" class="flex-1" subscriptSizing="dynamic">
         <mat-label>CEP</mat-label>
         <input matInput formControlName="cep" mask="00000-000" (blur)="buscarCep()">
         @if (buscando()) {
           <mat-spinner matSuffix diameter="18"></mat-spinner>
         }
-        <mat-hint>Digite o CEP e clique fora para buscar</mat-hint>
       </mat-form-field>
-      <mat-form-field appearance="outline" class="flex-1">
+      <mat-form-field appearance="outline" class="flex-1" subscriptSizing="dynamic">
         <mat-label>Numero</mat-label>
         <input matInput formControlName="numero">
       </mat-form-field>
-      <mat-form-field appearance="outline" class="flex-1">
+      <mat-form-field appearance="outline" class="flex-1" subscriptSizing="dynamic">
         <mat-label>Complemento</mat-label>
         <input matInput formControlName="complemento">
       </mat-form-field>
     </div>
+    <p class="cep-hint">Digite o CEP e clique fora para buscar</p>
 
     @if (feedback()) {
       <div class="feedback" [class.sucesso]="feedbackTipo() === 'sucesso'" [class.erro]="feedbackTipo() === 'erro'">
@@ -62,6 +62,13 @@ import { ViaCepService } from '../../../core/services/viacep.service';
     </div>
   `,
   styles: [`
+    .cep-hint {
+      font-size: 12px;
+      font-weight: 500;
+      color: var(--text-faint);
+      margin: 2px 0 14px;
+    }
+
     .auto-fields {
       background: var(--field-readonly);
       border: 1px solid var(--border);
