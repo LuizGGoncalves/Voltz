@@ -18,6 +18,7 @@ import org.springframework.http.ResponseEntity
 import org.springframework.security.authentication.AuthenticationManager
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken
 import org.springframework.security.core.Authentication
+import org.springframework.security.core.AuthenticationException
 import org.springframework.security.access.prepost.PreAuthorize
 import org.springframework.security.core.authority.SimpleGrantedAuthority
 import org.springframework.security.core.userdetails.UsernameNotFoundException
@@ -47,10 +48,16 @@ class AuthController(
             throw RateLimitExceededException()
         }
 
-        val authentication: Authentication = authenticationManager.authenticate(
-            UsernamePasswordAuthenticationToken(loginRequest.username, loginRequest.password)
-        )
+        val authentication: Authentication = try {
+            authenticationManager.authenticate(
+                UsernamePasswordAuthenticationToken(loginRequest.username, loginRequest.password)
+            )
+        } catch (ex: AuthenticationException) {
+            log.warn("Login falhou: username={}, ip={}, motivo={}", loginRequest.username, clientIp, ex.message)
+            throw ex
+        }
 
+        log.info("Login bem-sucedido: username={}, ip={}", authentication.name, clientIp)
         val accessToken = jwtService.gerarAccessToken(authentication.name, authentication.authorities)
         val rawRefreshToken = jwtService.gerarRefreshToken()
 
@@ -83,7 +90,7 @@ class AuthController(
         val usuario = usuarioRepository.findById(token.usuarioId)
             .orElseThrow { UsernameNotFoundException("Usuário não encontrado: id=${token.usuarioId}") }
 
-        // Rotacionar: revogar o antigo e emitir novo
+        log.info("Refresh token rotacionado: username={}", usuario.username)
         refreshTokenService.revogar(refreshToken)
 
         val authorities = usuario.roles.map { SimpleGrantedAuthority("ROLE_${it.nome}") }
@@ -109,6 +116,7 @@ class AuthController(
         httpRequest: HttpServletRequest,
         response: HttpServletResponse
     ): ResponseEntity<Void> {
+        log.info("Logout: ip={}", httpRequest.remoteAddr)
         if (!refreshToken.isNullOrBlank()) {
             refreshTokenService.revogar(refreshToken)
         }
