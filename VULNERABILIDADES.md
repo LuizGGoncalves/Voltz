@@ -145,23 +145,23 @@
 
 ## Cruzamento: Riscos do PLANO vs Status
 
-| # | Risco (PLANO 8.1) | Mitigação planejada | Implementado? | Gap |
-|---|-------------------|---------------------|---------------|-----|
-| 1 | Dedup na fila | 3 camadas | Parcial | Race condition (M1) + falta dedup instalação (M6) |
-| 2 | "Aceita e depois rejeita" | Validar sem-ViaCEP no submit | Sim | Front não bloqueia UF (sprint 5 confia no back) |
-| 3 | Regra duplicada em 2 caminhos | `finalizarCadastro()` | Sim | OK |
-| 5 | Cookie cross-origin | Nginx proxy | Sim | Cookie secure=false hardcoded (C2) |
-| 6 | Kotlin + JPA classes final | allopen/noarg | Sim | OK |
-| 7 | data class em entidade | Classes normais | Sim | OK |
-| 8 | Índice parcial não expressável | Flyway | Sim | OK |
-| 9 | Value class + JPA | Classe normal | Sim | Falta comentário (B4) |
-| 10 | Lost update | @Version | Parcial | Sem handler 409 (A6) + UC sem version (A7) |
-| 11 | @Async engolido | AsyncHandler + log | Não | Falta handler (A2) |
-| 12 | Login sem rate-limit | Throttle | Não | Falta implementar (C6) |
-| 13 | Dedup instalação na fila | Extrair + checar | Não | Falta implementar (M6) |
-| 14 | Segredos em .env | .gitignore + example | Sim | Secret default no yml (C3) + senha no SQL (M2) |
-| 15 | Fuso timestamp | UTC Instant | Sim | OK |
+| # | Risco (PLANO 8.1) | Mitigação planejada | Status |
+|---|-------------------|---------------------|--------|
+| 1 | Dedup na fila | 3 camadas | ✅ INSERT ON CONFLICT (M1) + dedup instalação (M6) |
+| 2 | "Aceita e depois rejeita" | Validar sem-ViaCEP no submit | ✅ Back valida tudo sem ViaCEP |
+| 3 | Regra duplicada em 2 caminhos | `finalizarCadastro()` | ✅ Fonte única |
+| 5 | Cookie cross-origin | Proxy mesma origem | ✅ Angular proxy + request.isSecure (C2) |
+| 6 | Kotlin + JPA classes final | allopen/noarg | ✅ Plugins configurados |
+| 7 | data class em entidade | Classes normais | ✅ Entidades são classes normais |
+| 8 | Índice parcial não expressável | Flyway | ✅ Criados via SQL |
+| 9 | Value class + JPA | Classe normal | ✅ Documentado (B4) |
+| 10 | Lost update | @Version | ✅ Cliente + UC com @Version, handler 409 (A6/A7) |
+| 11 | @Async engolido | AsyncHandler + log | ✅ AsyncConfig + try/catch no listener (A2) |
+| 12 | Login sem rate-limit | Throttle | ✅ bucket4j 5/15min por IP (C6) |
+| 13 | Dedup instalação na fila | Extrair + checar | ✅ Validação no enfileirar (M6) |
+| 14 | Segredos em .env | .gitignore + example | ✅ JWT_SECRET obrigatório, fail fast (C3) |
+| 15 | Fuso timestamp | UTC Instant | ✅ timestamptz + Instant |
 
 ---
 
-> **Próximo passo:** priorizar e resolver os CRITICOs, depois os ALTOs. Cada fix deve ser testado e registrado no QA.md.
+> **Auditoria finalizada em 2026-06-05.** 28 issues identificadas, 24 resolvidas, 3 aceitas/NA, 1 pendente (infra prod A8).
