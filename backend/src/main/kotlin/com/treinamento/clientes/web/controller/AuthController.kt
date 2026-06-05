@@ -5,6 +5,7 @@ import com.treinamento.clientes.security.JwtService
 import com.treinamento.clientes.service.RefreshTokenService
 import com.treinamento.clientes.web.dto.LoginRequest
 import com.treinamento.clientes.web.dto.LoginResponse
+import jakarta.servlet.http.HttpServletRequest
 import jakarta.servlet.http.HttpServletResponse
 import jakarta.validation.Valid
 import org.springframework.http.HttpHeaders
@@ -27,11 +28,12 @@ class AuthController(
 
     @PostMapping("/login")
     fun login(
-        @Valid @RequestBody request: LoginRequest,
+        @Valid @RequestBody loginRequest: LoginRequest,
+        httpRequest: HttpServletRequest,
         response: HttpServletResponse
     ): ResponseEntity<LoginResponse> {
         val authentication: Authentication = authenticationManager.authenticate(
-            UsernamePasswordAuthenticationToken(request.username, request.password)
+            UsernamePasswordAuthenticationToken(loginRequest.username, loginRequest.password)
         )
 
         val accessToken = jwtService.gerarAccessToken(authentication.name, authentication.authorities)
@@ -40,7 +42,7 @@ class AuthController(
         val usuario = usuarioRepository.findByUsername(authentication.name).get()
         refreshTokenService.criar(usuario.id!!, rawRefreshToken)
 
-        val cookie = buildRefreshCookie(rawRefreshToken, jwtService.getRefreshExpirationMs() / 1000)
+        val cookie = buildRefreshCookie(rawRefreshToken, jwtService.getRefreshExpirationMs() / 1000, httpRequest.isSecure)
         response.addHeader(HttpHeaders.SET_COOKIE, cookie.toString())
 
         return ResponseEntity.ok(
@@ -54,6 +56,7 @@ class AuthController(
     @PostMapping("/refresh")
     fun refresh(
         @CookieValue("refresh_token", required = false) refreshToken: String?,
+        httpRequest: HttpServletRequest,
         response: HttpServletResponse
     ): ResponseEntity<LoginResponse> {
         if (refreshToken.isNullOrBlank()) {
@@ -73,7 +76,7 @@ class AuthController(
         val newRawRefreshToken = jwtService.gerarRefreshToken()
         refreshTokenService.criar(usuario.id!!, newRawRefreshToken)
 
-        val cookie = buildRefreshCookie(newRawRefreshToken, jwtService.getRefreshExpirationMs() / 1000)
+        val cookie = buildRefreshCookie(newRawRefreshToken, jwtService.getRefreshExpirationMs() / 1000, httpRequest.isSecure)
         response.addHeader(HttpHeaders.SET_COOKIE, cookie.toString())
 
         return ResponseEntity.ok(
@@ -87,22 +90,23 @@ class AuthController(
     @PostMapping("/logout")
     fun logout(
         @CookieValue("refresh_token", required = false) refreshToken: String?,
+        httpRequest: HttpServletRequest,
         response: HttpServletResponse
     ): ResponseEntity<Void> {
         if (!refreshToken.isNullOrBlank()) {
             refreshTokenService.revogar(refreshToken)
         }
 
-        val cookie = buildRefreshCookie("", 0)
+        val cookie = buildRefreshCookie("", 0, httpRequest.isSecure)
         response.addHeader(HttpHeaders.SET_COOKIE, cookie.toString())
 
         return ResponseEntity.noContent().build()
     }
 
-    private fun buildRefreshCookie(value: String, maxAge: Long): ResponseCookie =
+    private fun buildRefreshCookie(value: String, maxAge: Long, secure: Boolean): ResponseCookie =
         ResponseCookie.from("refresh_token", value)
             .httpOnly(true)
-            .secure(false) // dev: sem HTTPS; em prod: true
+            .secure(secure) // Derivado de request.isSecure — acompanha o protocolo automaticamente
             .path("/api/v1/auth")
             .maxAge(maxAge)
             .sameSite("Lax")

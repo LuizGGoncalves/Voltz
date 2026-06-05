@@ -25,10 +25,10 @@
 - **Risco:** Expõe toda a estrutura da API publicamente (OWASP A05:2021)
 - **Solução aplicada:** Swagger controlado por `springdoc.swagger-ui.public-access` (default: `false` = protegido). Em dev, `SPRINGDOC_PUBLIC_ACCESS=true` via env var. **Justificativa:** velocidade no desenvolvimento local (sem precisar copiar token para cada teste no Swagger) com segurança em produção (default protegido — esquecer a config não expõe nada)
 
-### C2. Cookie `secure=false` sem parametrização por profile
-- **Onde:** `AuthController.kt:105`
+### ~~C2. Cookie `secure=false` sem parametrização por profile~~ — RESOLVIDO
+- **Onde:** `AuthController.kt`
 - **Problema:** `secure(false)` hardcoded — se deploy acidental em prod, refresh token viaja em HTTP puro
-- **Fix:** Parametrizar via `application.yml` com valor por profile (dev=false, prod=true)
+- **Solução aplicada:** `secure(request.isSecure)` — o cookie acompanha o protocolo da requisição automaticamente. Em dev (HTTP) fica `false`, em prod (HTTPS via proxy) fica `true` sem config manual. Configurado `server.forward-headers-strategy: framework` para que o Spring leia `X-Forwarded-Proto` de proxies. **Justificativa:** padrão Spring Boot para apps atrás de proxy reverso; zero config manual = zero risco de esquecer
 
 ### C3. JWT Secret padrão no código + padding inseguro
 - **Onde:** `application.yml:34`, `JwtService.kt:18`, `SecurityConfig.kt:73`
