@@ -25,15 +25,12 @@ export class ClienteService {
     return this.http.get<Cliente>(`${this.baseUrl}/${id}`);
   }
 
-  listar(page = 0, size = 20, filtroStatus = 'ativos'): Observable<Page<ClienteResumo>> {
+  listar(page = 0, size = 20, filtroStatus = 'ativos', sort = 'nome,asc'): Observable<Page<ClienteResumo>> {
     const params = new HttpParams()
       .set('page', page).set('size', size)
-      .set('filtroStatus', filtroStatus);
+      .set('filtroStatus', filtroStatus)
+      .set('sort', sort);
     return this.http.get<Page<ClienteResumo>>(this.baseUrl, { params });
-  }
-
-  ultimos20(): Observable<Page<ClienteResumo>> {
-    return this.http.get<Page<ClienteResumo>>(`${this.baseUrl}/ultimos`);
   }
 
   inativar(id: number): Observable<void> {

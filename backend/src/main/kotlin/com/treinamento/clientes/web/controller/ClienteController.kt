@@ -62,12 +62,6 @@ class ClienteController(
         return ResponseEntity.ok(page)
     }
 
-    @GetMapping("/ultimos")
-    fun ultimos20(): ResponseEntity<Page<ClienteResumoResponse>> {
-        val page = clienteService.ultimos20().map { it.toResumoResponse() }
-        return ResponseEntity.ok(page)
-    }
-
     @PreAuthorize("hasRole('ADMIN')")
     @PatchMapping("/{id}/documento")
     fun corrigirDocumento(

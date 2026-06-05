@@ -17,7 +17,4 @@ interface ClienteRepository : JpaRepository<Cliente, Long> {
 
     @Query("SELECT COUNT(*) > 0 FROM cliente WHERE documento = :documento AND ativo = true", nativeQuery = true)
     fun existsByDocumentoAndAtivoTrue(documento: String): Boolean
-
-    @Query("SELECT c FROM Cliente c WHERE c.ativo = true ORDER BY c.createdAt DESC")
-    fun findUltimos20(pageable: Pageable): Page<Cliente>
 }

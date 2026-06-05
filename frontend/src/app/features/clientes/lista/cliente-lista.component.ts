@@ -12,6 +12,7 @@ import { MatSnackBar, MatSnackBarModule } from '@angular/material/snack-bar';
 import { MatTooltipModule } from '@angular/material/tooltip';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatInputModule } from '@angular/material/input';
+import { MatSelectModule } from '@angular/material/select';
 import { MatDialog, MatDialogModule } from '@angular/material/dialog';
 import { ClienteService } from '../../../core/services/cliente.service';
 import { ClienteResumo } from '../../../core/models/cliente.model';
@@ -28,7 +29,7 @@ import {
     CommonModule, RouterModule, FormsModule,
     MatTableModule, MatPaginatorModule, MatButtonModule, MatIconModule,
     MatButtonToggleModule, MatSnackBarModule, MatTooltipModule,
-    MatFormFieldModule, MatInputModule, MatDialogModule,
+    MatFormFieldModule, MatInputModule, MatSelectModule, MatDialogModule,
     DocumentoPipe, StatusBadgeComponent, EmptyStateComponent,
     SkeletonComponent, AvatarComponent
   ],
@@ -44,6 +45,14 @@ import {
           <mat-button-toggle value="inativos">Inativos</mat-button-toggle>
           <mat-button-toggle value="todos">Todos</mat-button-toggle>
         </mat-button-toggle-group>
+        <mat-form-field appearance="outline" class="sort-field" subscriptSizing="dynamic">
+          <mat-select [(ngModel)]="ordenacao" (selectionChange)="onFiltroChange()">
+            <mat-option value="nome,asc">Nome A–Z</mat-option>
+            <mat-option value="nome,desc">Nome Z–A</mat-option>
+            <mat-option value="createdAt,desc">Mais recentes</mat-option>
+            <mat-option value="createdAt,asc">Mais antigos</mat-option>
+          </mat-select>
+        </mat-form-field>
       </div>
       <a mat-raised-button color="primary" routerLink="/clientes/novo">
         <mat-icon>add</mat-icon> Novo Cliente
@@ -134,6 +143,10 @@ import {
       min-width: 200px;
       mat-icon { color: var(--text-faint); margin-right: 4px; }
     }
+    .sort-field {
+      width: 170px;
+      min-width: 150px;
+    }
 
     .table-card {
       background: var(--surface);
@@ -175,6 +188,7 @@ export class ClienteListaComponent implements OnInit {
   erro = signal<string | null>(null);
   page = 0;
   filtroStatus = 'ativos';
+  ordenacao = 'nome,asc';
   busca = '';
   colunas = ['nome', 'status', 'createdAt', 'acoes'];
 
@@ -189,7 +203,7 @@ export class ClienteListaComponent implements OnInit {
   carregar() {
     this.loading.set(true);
     this.erro.set(null);
-    this.clienteService.listar(this.page, 20, this.filtroStatus)
+    this.clienteService.listar(this.page, 20, this.filtroStatus, this.ordenacao)
       .pipe(takeUntilDestroyed(this.destroyRef))
       .subscribe({
         next: p => {

@@ -18,9 +18,7 @@ import com.treinamento.clientes.web.mapper.toModel
 import org.slf4j.LoggerFactory
 import org.springframework.context.ApplicationEventPublisher
 import org.springframework.data.domain.Page
-import org.springframework.data.domain.PageRequest
 import org.springframework.data.domain.Pageable
-import org.springframework.data.domain.Sort
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
 
@@ -124,10 +122,6 @@ class ClienteService(
             else -> if (incluirInativos) clienteRepository.findAll(pageable)
                     else clienteRepository.findAllByAtivoTrue(pageable)
         }
-
-    @Transactional(readOnly = true)
-    fun ultimos20(): Page<Cliente> =
-        clienteRepository.findUltimos20(PageRequest.of(0, 20, Sort.by(Sort.Direction.DESC, "createdAt")))
 
     @Transactional
     fun corrigirDocumento(id: Long, novoDocumento: String, motivo: String): Cliente {
