@@ -29,9 +29,12 @@ class RetryCadastroJob(
     companion object {
         const val MAX_TENTATIVAS = 5
         const val BATCH_SIZE = 50
+        const val MAX_FALHAS_CONSECUTIVAS = 3
         val TTL: Duration = Duration.ofHours(24)
         val BACKOFF_INTERVALS = longArrayOf(1, 2, 4, 8, 16) // minutos
     }
+
+    private var falhasConsecutivas = 0
 
     @Scheduled(fixedDelayString = "\${retry.interval-ms:60000}")
     fun processarPendentes() {
@@ -39,11 +42,23 @@ class RetryCadastroJob(
         if (pendentes.isEmpty()) return
 
         log.info("Retry job: {} pendentes para processar", pendentes.size)
+        var falhasNoBatch = 0
+
         pendentes.forEach { pendente ->
             try {
                 processarUm(pendente)
+                falhasConsecutivas = 0
             } catch (ex: Exception) {
+                falhasNoBatch++
                 log.error("Erro inesperado ao processar pendente {}: {}", pendente.id, ex.message)
+            }
+        }
+
+        if (falhasNoBatch == pendentes.size) {
+            falhasConsecutivas++
+            log.warn("Retry job: batch inteiro falhou ({} consecutivas). Possível problema sistêmico.", falhasConsecutivas)
+            if (falhasConsecutivas >= MAX_FALHAS_CONSECUTIVAS) {
+                log.error("ALERTA: {} batches consecutivos falharam integralmente. Verificar saúde do sistema.", falhasConsecutivas)
             }
         }
     }

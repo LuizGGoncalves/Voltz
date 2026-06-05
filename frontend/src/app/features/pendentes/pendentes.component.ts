@@ -1,4 +1,5 @@
-import { Component, OnInit, signal } from '@angular/core';
+import { Component, DestroyRef, OnInit, inject, signal } from '@angular/core';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { CommonModule } from '@angular/common';
 import { MatTableModule } from '@angular/material/table';
 import { MatPaginatorModule, PageEvent } from '@angular/material/paginator';
@@ -54,11 +55,14 @@ export class PendentesComponent implements OnInit {
   filtroStatus = '';
   colunas = ['id', 'documento', 'status', 'motivo', 'tentativas', 'createdAt'];
 
+  private destroyRef = inject(DestroyRef);
+
   constructor(private clienteService: ClienteService) {}
   ngOnInit() { this.carregar(); }
 
   carregar() {
-    this.clienteService.listarPendentes(this.page, 20, this.filtroStatus || undefined).subscribe(p => {
+    this.clienteService.listarPendentes(this.page, 20, this.filtroStatus || undefined)
+      .pipe(takeUntilDestroyed(this.destroyRef)).subscribe(p => {
       this.pendentes.set(p.content);
       this.total.set(p.totalElements);
     });

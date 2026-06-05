@@ -18,5 +18,5 @@ class UfBloqueadaException(uf: String, ucNome: String) :
 class CepNaoEncontradoException(cep: String) :
     RuntimeException("CEP não encontrado: $cep")
 
-class RateLimitExceededException :
+class LimiteTentativasExcedidoException :
     RuntimeException("Muitas tentativas. Tente novamente em alguns minutos.")

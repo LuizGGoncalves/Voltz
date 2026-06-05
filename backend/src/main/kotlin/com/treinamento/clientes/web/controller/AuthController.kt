@@ -1,6 +1,6 @@
 package com.treinamento.clientes.web.controller
 
-import com.treinamento.clientes.exception.RateLimitExceededException
+import com.treinamento.clientes.exception.LimiteTentativasExcedidoException
 import com.treinamento.clientes.repository.UsuarioRepository
 import com.treinamento.clientes.security.JwtService
 import com.treinamento.clientes.security.RateLimitService
@@ -45,7 +45,7 @@ class AuthController(
         val clientIp = httpRequest.remoteAddr
         if (!rateLimitService.tryConsume(clientIp)) {
             log.warn("Rate limit excedido para IP={}", clientIp)
-            throw RateLimitExceededException()
+            throw LimiteTentativasExcedidoException()
         }
 
         val authentication: Authentication = try {

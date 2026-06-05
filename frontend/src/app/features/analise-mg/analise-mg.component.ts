@@ -1,4 +1,5 @@
-import { Component, OnInit, signal } from '@angular/core';
+import { Component, DestroyRef, OnInit, inject, signal } from '@angular/core';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { CommonModule } from '@angular/common';
 import { MatTableModule } from '@angular/material/table';
 import { MatPaginatorModule, PageEvent } from '@angular/material/paginator';
@@ -34,6 +35,7 @@ import { AnaliseMg } from '../../core/models/cliente.model';
   `]
 })
 export class AnaliseMgComponent implements OnInit {
+  private destroyRef = inject(DestroyRef);
   analises = signal<AnaliseMg[]>([]);
   total = signal(0);
   page = 0;
@@ -43,7 +45,7 @@ export class AnaliseMgComponent implements OnInit {
   ngOnInit() { this.carregar(); }
 
   carregar() {
-    this.clienteService.listarAnalisesMg(this.page, 20).subscribe(p => {
+    this.clienteService.listarAnalisesMg(this.page, 20).pipe(takeUntilDestroyed(this.destroyRef)).subscribe(p => {
       this.analises.set(p.content);
       this.total.set(p.totalElements);
     });

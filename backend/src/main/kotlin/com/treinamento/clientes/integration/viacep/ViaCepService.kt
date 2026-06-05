@@ -2,23 +2,29 @@ package com.treinamento.clientes.integration.viacep
 
 import com.treinamento.clientes.domain.model.Endereco
 import org.slf4j.LoggerFactory
+import org.springframework.beans.factory.annotation.Value
 import org.springframework.http.client.SimpleClientHttpRequestFactory
 import org.springframework.stereotype.Service
 import org.springframework.web.client.RestClient
 import org.springframework.web.client.RestClientException
 
 @Service
-class ViaCepService {
+class ViaCepService(
+    @Value("\${viacep.timeout-ms:3000}")
+    private val timeoutMs: Int
+) {
 
     private val log = LoggerFactory.getLogger(javaClass)
 
-    private val restClient: RestClient = RestClient.builder()
-        .baseUrl("https://viacep.com.br/ws")
-        .requestFactory(SimpleClientHttpRequestFactory().apply {
-            setConnectTimeout(3000)
-            setReadTimeout(3000)
-        })
-        .build()
+    private val restClient: RestClient by lazy {
+        RestClient.builder()
+            .baseUrl("https://viacep.com.br/ws")
+            .requestFactory(SimpleClientHttpRequestFactory().apply {
+                setConnectTimeout(timeoutMs)
+                setReadTimeout(timeoutMs)
+            })
+            .build()
+    }
 
     fun consultar(cep: String): Endereco {
         val cepLimpo = cep.replace("-", "").replace(".", "")

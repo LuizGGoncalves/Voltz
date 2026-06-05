@@ -57,8 +57,8 @@ class GlobalExceptionHandler {
     fun handleViaCepIndisponivel(ex: ViaCepIndisponivelException): ProblemDetail =
         ProblemDetail.forStatusAndDetail(HttpStatus.SERVICE_UNAVAILABLE, ex.message!!)
 
-    @ExceptionHandler(RateLimitExceededException::class)
-    fun handleRateLimit(ex: RateLimitExceededException): ProblemDetail =
+    @ExceptionHandler(LimiteTentativasExcedidoException::class)
+    fun handleRateLimit(ex: LimiteTentativasExcedidoException): ProblemDetail =
         ProblemDetail.forStatusAndDetail(HttpStatus.TOO_MANY_REQUESTS, ex.message!!)
 
     @ExceptionHandler(OptimisticLockingFailureException::class)
