@@ -161,20 +161,20 @@ import { documentoValidator } from '../../../shared/validators/documento.validat
 
     .form-actions-bar {
       position: sticky;
-      bottom: 0;
-      background: var(--bg);
-      border-top: 1px solid var(--border);
-      margin: 20px -28px -26px;
-      padding: 16px 28px;
+      bottom: 16px;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--r-lg);
+      margin-top: 20px;
+      padding: 14px 22px;
       z-index: 10;
-      box-shadow: 0 -4px 12px rgba(0, 0, 0, .04);
+      box-shadow: var(--sh-2);
     }
 
     .form-actions-inner {
       display: flex;
       justify-content: flex-end;
       gap: 12px;
-      max-width: 920px;
     }
   `]
 })
