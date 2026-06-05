@@ -23,7 +23,7 @@ import { ViaCepService } from '../../../core/services/viacep.service';
         <mat-hint>Digite o CEP e clique fora para buscar</mat-hint>
       </mat-form-field>
       <mat-form-field appearance="outline" class="flex-1">
-        <mat-label>Número</mat-label>
+        <mat-label>Numero</mat-label>
         <input matInput formControlName="numero">
       </mat-form-field>
       <mat-form-field appearance="outline" class="flex-1">
@@ -40,54 +40,48 @@ import { ViaCepService } from '../../../core/services/viacep.service';
     }
 
     <div [formGroup]="form" class="row campos-auto" [class.preenchido]="form.get('logradouro')?.value">
-      <mat-form-field appearance="fill" class="flex-2">
+      <mat-form-field appearance="outline" class="flex-2 field-readonly">
         <mat-label>Logradouro</mat-label>
-        <input matInput formControlName="logradouro" readonly>
-        <mat-icon matSuffix *ngIf="form.get('logradouro')?.value">auto_fix_high</mat-icon>
+        <input matInput formControlName="logradouro" readonly tabindex="-1">
       </mat-form-field>
-      <mat-form-field appearance="fill" class="flex-1">
+      <mat-form-field appearance="outline" class="flex-1 field-readonly">
         <mat-label>Bairro</mat-label>
-        <input matInput formControlName="bairro" readonly>
+        <input matInput formControlName="bairro" readonly tabindex="-1">
       </mat-form-field>
-      <mat-form-field appearance="fill" class="flex-1">
+      <mat-form-field appearance="outline" class="flex-1 field-readonly">
         <mat-label>Cidade</mat-label>
-        <input matInput formControlName="cidade" readonly>
+        <input matInput formControlName="cidade" readonly tabindex="-1">
       </mat-form-field>
-      <mat-form-field appearance="fill" style="width:80px">
+      <mat-form-field appearance="outline" class="field-readonly" style="width:80px">
         <mat-label>UF</mat-label>
-        <input matInput formControlName="uf" readonly>
+        <input matInput formControlName="uf" readonly tabindex="-1">
       </mat-form-field>
     </div>
   `,
   styles: [`
-    .row { display: flex; gap: 12px; flex-wrap: wrap; }
-    .flex-1 { flex: 1; min-width: 130px; }
-    .flex-2 { flex: 2; min-width: 200px; }
-
     .campos-auto {
       opacity: 0.5;
-      transition: opacity 0.3s ease;
+      transition: opacity 0.3s var(--ease);
     }
     .campos-auto.preenchido {
       opacity: 1;
-    }
-    .campos-auto input[readonly] {
-      color: #555;
     }
 
     .feedback {
       display: flex;
       align-items: center;
-      gap: 6px;
-      padding: 8px 12px;
-      margin: 4px 0 12px;
-      border-radius: 8px;
+      gap: 8px;
+      padding: 10px 14px;
+      margin: 4px 0 14px;
+      border-radius: var(--r-md);
       font-size: 13px;
-      animation: fadeIn 0.3s ease;
+      font-weight: 500;
+      font-family: var(--font-ui);
+      animation: fadeIn 0.26s var(--ease);
     }
     .feedback mat-icon { font-size: 18px; width: 18px; height: 18px; }
-    .feedback.sucesso { background: #e8f5e9; color: #2e7d32; }
-    .feedback.erro { background: #fce4ec; color: #c62828; }
+    .feedback.sucesso { background: var(--ok-bg); color: var(--ok-fg); }
+    .feedback.erro { background: var(--danger-bg); color: var(--danger-fg); }
 
     @keyframes fadeIn {
       from { opacity: 0; transform: translateY(-4px); }

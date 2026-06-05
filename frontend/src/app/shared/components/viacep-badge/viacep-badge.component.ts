@@ -1,6 +1,5 @@
 import { Component } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { MatChipsModule } from '@angular/material/chips';
 import { MatIconModule } from '@angular/material/icon';
 import { MatTooltipModule } from '@angular/material/tooltip';
 import { ViaCepService } from '../../../core/services/viacep.service';
@@ -8,28 +7,41 @@ import { ViaCepService } from '../../../core/services/viacep.service';
 @Component({
   selector: 'app-viacep-badge',
   standalone: true,
-  imports: [CommonModule, MatChipsModule, MatIconModule, MatTooltipModule],
+  imports: [CommonModule, MatIconModule, MatTooltipModule],
   template: `
     <div class="viacep-status" [matTooltip]="tooltip()">
-      <mat-icon [class]="statusClass()">{{ statusIcon() }}</mat-icon>
-      <span class="label">ViaCEP: {{ statusText() }}</span>
+      <span class="status-dot" [class.online]="isOnline()" [class.offline]="!isOnline()"></span>
+      <span class="status-label">ViaCEP: {{ isOnline() ? 'Disponível' : 'Indisponível' }}</span>
     </div>
   `,
   styles: [`
-    .viacep-status { display: flex; align-items: center; gap: 8px; font-size: 13px; cursor: help; }
-    .online { color: #4caf50; }
-    .offline { color: #ff9800; }
-    .label { color: #666; }
+    .viacep-status {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      cursor: help;
+    }
+    .status-dot {
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      flex-shrink: 0;
+    }
+    .status-dot.online { background: var(--accent-500); }
+    .status-dot.offline { background: var(--warn-fg); }
+    .status-label {
+      font-size: 13px;
+      font-weight: 500;
+      color: var(--sidebar-fg);
+    }
   `]
 })
 export class ViaCepBadgeComponent {
   constructor(private viaCepService: ViaCepService) {}
 
-  statusIcon() { return this.viaCepService.status().disponivel ? 'check_circle' : 'warning'; }
-  statusClass() { return this.viaCepService.status().disponivel ? 'online' : 'offline'; }
-  statusText() { return this.viaCepService.status().disponivel ? 'disponível' : 'indisponível'; }
+  isOnline() { return this.viaCepService.status().disponivel; }
   tooltip() {
-    return this.viaCepService.status().disponivel
+    return this.isOnline()
       ? 'Consulta de CEP funcionando normalmente.'
       : 'Consulta de CEP indisponível. Cadastros serão processados automaticamente quando o serviço voltar.';
   }

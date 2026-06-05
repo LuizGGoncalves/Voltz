@@ -5,53 +5,80 @@ import { FormsModule } from '@angular/forms';
 import { MatTableModule } from '@angular/material/table';
 import { MatPaginatorModule, PageEvent } from '@angular/material/paginator';
 import { MatButtonToggleModule } from '@angular/material/button-toggle';
-import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { ClienteService } from '../../core/services/cliente.service';
 import { CadastroPendente } from '../../core/models/cliente.model';
-import { StatusBadgeComponent, EmptyStateComponent, DocumentoPipe } from '../../shared';
+import {
+  StatusBadgeComponent, EmptyStateComponent, DocumentoPipe,
+  SkeletonComponent, CalloutComponent
+} from '../../shared';
 
 @Component({
   selector: 'app-pendentes',
   standalone: true,
   imports: [
     CommonModule, FormsModule,
-    MatTableModule, MatPaginatorModule, MatButtonToggleModule, MatProgressSpinnerModule,
-    StatusBadgeComponent, EmptyStateComponent, DocumentoPipe
+    MatTableModule, MatPaginatorModule, MatButtonToggleModule,
+    StatusBadgeComponent, EmptyStateComponent, DocumentoPipe,
+    SkeletonComponent, CalloutComponent
   ],
   template: `
-    <h2>Cadastros Pendentes</h2>
-    <mat-button-toggle-group [(ngModel)]="filtroStatus" (change)="carregar()">
-      <mat-button-toggle value="">Todos</mat-button-toggle>
-      <mat-button-toggle value="PENDENTE">Pendente</mat-button-toggle>
-      <mat-button-toggle value="PROCESSADO">Processado</mat-button-toggle>
-      <mat-button-toggle value="REJEITADO">Rejeitado</mat-button-toggle>
-      <mat-button-toggle value="FALHA">Falha</mat-button-toggle>
-    </mat-button-toggle-group>
+    <app-callout icon="schedule" variant="brand">
+      Cadastros que aguardam validação do ViaCEP. São processados automaticamente quando o serviço estiver disponível.
+    </app-callout>
+
+    <div class="filter-bar">
+      <mat-button-toggle-group [(ngModel)]="filtroStatus" (change)="carregar()">
+        <mat-button-toggle value="">Todos</mat-button-toggle>
+        <mat-button-toggle value="PENDENTE">Pendente</mat-button-toggle>
+        <mat-button-toggle value="PROCESSADO">Processado</mat-button-toggle>
+        <mat-button-toggle value="REJEITADO">Rejeitado</mat-button-toggle>
+        <mat-button-toggle value="FALHA">Falha</mat-button-toggle>
+      </mat-button-toggle-group>
+    </div>
 
     @if (loading()) {
-      <div class="center"><mat-spinner diameter="40"></mat-spinner></div>
+      <div class="table-card">
+        <div class="card-header"><h3>Fila de pendentes</h3></div>
+        <app-skeleton [rowCount]="4" [columns]="[1, 2, 1, 2, 1, 2]" />
+      </div>
     } @else if (erro()) {
       <app-empty-state icon="error_outline" [message]="erro()!" />
     } @else if (pendentes().length === 0) {
-      <app-empty-state icon="hourglass_empty" message="Nenhum cadastro pendente." />
+      <app-empty-state icon="check_circle" title="Nenhum cadastro pendente" subtitle="Todos os cadastros foram processados." />
     } @else {
-      <table mat-table [dataSource]="pendentes()" class="full-width" style="margin-top:16px">
-        <ng-container matColumnDef="id"><th mat-header-cell *matHeaderCellDef>ID</th><td mat-cell *matCellDef="let p">{{ p.id }}</td></ng-container>
-        <ng-container matColumnDef="documento"><th mat-header-cell *matHeaderCellDef>Documento</th><td mat-cell *matCellDef="let p">{{ p.documento | documento }}</td></ng-container>
-        <ng-container matColumnDef="status">
-          <th mat-header-cell *matHeaderCellDef>Status</th>
-          <td mat-cell *matCellDef="let p"><app-status-badge [status]="p.status" [label]="p.status" /></td>
-        </ng-container>
-        <ng-container matColumnDef="motivo"><th mat-header-cell *matHeaderCellDef>Motivo</th><td mat-cell *matCellDef="let p">{{ p.motivo || '-' }}</td></ng-container>
-        <ng-container matColumnDef="tentativas"><th mat-header-cell *matHeaderCellDef>Tentativas</th><td mat-cell *matCellDef="let p">{{ p.tentativas }}</td></ng-container>
-        <ng-container matColumnDef="createdAt"><th mat-header-cell *matHeaderCellDef>Criado em</th><td mat-cell *matCellDef="let p">{{ p.createdAt | date:'dd/MM/yyyy HH:mm' }}</td></ng-container>
-        <tr mat-header-row *matHeaderRowDef="colunas"></tr>
-        <tr mat-row *matRowDef="let row; columns: colunas;"></tr>
-      </table>
-      <mat-paginator [length]="total()" [pageSize]="20" (page)="onPage($event)" showFirstLastButtons></mat-paginator>
+      <div class="table-card">
+        <div class="card-header">
+          <h3>Fila de pendentes <span class="count-badge">{{ total() }}</span></h3>
+        </div>
+        <table mat-table [dataSource]="pendentes()" class="full-width">
+          <ng-container matColumnDef="id"><th mat-header-cell *matHeaderCellDef>ID</th><td mat-cell *matCellDef="let p" class="mono">{{ p.id }}</td></ng-container>
+          <ng-container matColumnDef="documento"><th mat-header-cell *matHeaderCellDef>Documento</th><td mat-cell *matCellDef="let p" class="mono">{{ p.documento | documento }}</td></ng-container>
+          <ng-container matColumnDef="status">
+            <th mat-header-cell *matHeaderCellDef>Status</th>
+            <td mat-cell *matCellDef="let p"><app-status-badge [status]="p.status" /></td>
+          </ng-container>
+          <ng-container matColumnDef="motivo"><th mat-header-cell *matHeaderCellDef>Motivo</th><td mat-cell *matCellDef="let p">{{ p.motivo || '—' }}</td></ng-container>
+          <ng-container matColumnDef="tentativas"><th mat-header-cell *matHeaderCellDef>Tentativas</th><td mat-cell *matCellDef="let p" class="mono">{{ p.tentativas }}</td></ng-container>
+          <ng-container matColumnDef="createdAt"><th mat-header-cell *matHeaderCellDef>Criado em</th><td mat-cell *matCellDef="let p" class="mono">{{ p.createdAt | date:'dd/MM/yyyy HH:mm' }}</td></ng-container>
+          <tr mat-header-row *matHeaderRowDef="colunas"></tr>
+          <tr mat-row *matRowDef="let row; columns: colunas;"></tr>
+        </table>
+        <mat-paginator [length]="total()" [pageSize]="20" (page)="onPage($event)" showFirstLastButtons></mat-paginator>
+      </div>
     }
   `,
-  styles: [`.full-width { width: 100%; } .center { display: flex; justify-content: center; padding: 48px; }`]
+  styles: [`
+    .filter-bar {
+      margin-bottom: 20px;
+    }
+    .table-card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--r-lg);
+      box-shadow: var(--sh-1);
+      overflow: hidden;
+    }
+  `]
 })
 export class PendentesComponent implements OnInit {
   private destroyRef = inject(DestroyRef);

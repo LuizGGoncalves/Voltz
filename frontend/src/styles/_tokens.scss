@@ -1,0 +1,124 @@
+// ============================================
+// Bolt Energy — Design System Tokens
+// ============================================
+// Fonte unica de verdade para cores, tipografia,
+// espacamento, sombras e raios.
+// Nunca use hex solto nos componentes — sempre var(--token).
+
+:root {
+  // -- Marca --
+  --bolt-500: #2B40F5;
+  --bolt-600: #2235d6;
+  --bolt-700: #1c2bb0;
+  --bolt-400: #6575f8;
+  --bolt-tint: #ebedfe;
+  --accent-500: #30efbc;
+  --accent-600: #16d3a1;
+  --accent-700: #0a9c76;
+  --accent-tint: #e2fdf6;
+
+  // -- Superficies --
+  --bg: #f5f7f6;
+  --surface: #ffffff;
+  --surface-2: #fbfcfb;
+  --elevated: #ffffff;
+  --sidebar: #12151b;
+  --sidebar-fg: #aeb6c2;
+  --sidebar-fg-strong: #ffffff;
+  --sidebar-active-bg: rgba(99, 117, 248, .16);
+  --sidebar-active-fg: #9aa7ff;
+
+  // -- Texto --
+  --text: #161b22;
+  --text-soft: #51606f;
+  --text-faint: #8b97a6;
+  --text-onbrand: #ffffff;
+
+  // -- Linhas e campos --
+  --border: #e4e9e7;
+  --border-strong: #d2d9d6;
+  --field-bg: #ffffff;
+  --field-readonly: #f3f5f4;
+  --hover-row: #f6faf8;
+
+  // -- Semanticas (status) --
+  --ok-bg: #e6f6ec;
+  --ok-fg: #1f8a4c;
+  --warn-bg: #fff3e0;
+  --warn-fg: #b8650b;
+  --danger-bg: #fdeaea;
+  --danger-fg: #c8372f;
+  --crit-bg: #fbe3e3;
+  --crit-fg: #a51f1f;
+  --info-bg: #e8f1fe;
+  --info-fg: #1d63c4;
+
+  // -- Tipografia --
+  --font-display: "Space Grotesk", "Manrope", system-ui, sans-serif;
+  --font-ui: "Manrope", system-ui, -apple-system, sans-serif;
+
+  // -- Raio --
+  --r-xs: 6px;
+  --r-sm: 9px;
+  --r-md: 12px;
+  --r-lg: 16px;
+  --r-xl: 22px;
+  --r-pill: 999px;
+
+  // -- Sombra --
+  --sh-1: 0 1px 2px rgba(18, 21, 27, .05), 0 1px 3px rgba(18, 21, 27, .04);
+  --sh-2: 0 2px 6px rgba(18, 21, 27, .06), 0 6px 18px rgba(18, 21, 27, .06);
+  --sh-3: 0 8px 24px rgba(18, 21, 27, .10), 0 2px 8px rgba(18, 21, 27, .06);
+  --sh-pop: 0 18px 50px rgba(18, 21, 27, .22), 0 6px 16px rgba(18, 21, 27, .12);
+  --ring: 0 0 0 4px rgba(43, 64, 245, .2);
+
+  // -- Movimento --
+  --ease: cubic-bezier(.2, .7, .2, 1);
+  --dur: .18s;
+}
+
+// ============================================
+// Tema escuro
+// ============================================
+[data-theme="dark"] {
+  --bolt-700: #97a4ff;
+  --bolt-tint: rgba(99, 117, 248, .14);
+  --accent-700: #30efbc;
+  --accent-tint: rgba(48, 239, 188, .12);
+
+  --bg: #0d0f13;
+  --surface: #15181e;
+  --surface-2: #181c23;
+  --elevated: #1b1f27;
+  --sidebar: #0a0c10;
+  --sidebar-fg: #8b95a4;
+  --sidebar-active-bg: rgba(99, 117, 248, .18);
+  --sidebar-active-fg: #aab4ff;
+
+  --text: #eef2f1;
+  --text-soft: #a4afbd;
+  --text-faint: #6b7686;
+
+  --border: #262b34;
+  --border-strong: #333a45;
+  --field-bg: #1b1f27;
+  --field-readonly: #13161c;
+  --hover-row: #1b2129;
+
+  --ok-bg: rgba(31, 138, 76, .18);
+  --ok-fg: #54d98a;
+  --warn-bg: rgba(184, 101, 11, .18);
+  --warn-fg: #f0a64a;
+  --danger-bg: rgba(200, 55, 47, .18);
+  --danger-fg: #f08178;
+  --crit-bg: rgba(165, 31, 31, .22);
+  --crit-fg: #f08178;
+  --info-bg: rgba(29, 99, 196, .18);
+  --info-fg: #6aa6f5;
+
+  --sh-1: 0 1px 2px rgba(0, 0, 0, .4), 0 1px 3px rgba(0, 0, 0, .3);
+  --sh-2: 0 2px 6px rgba(0, 0, 0, .4), 0 6px 18px rgba(0, 0, 0, .3);
+  --sh-3: 0 8px 24px rgba(0, 0, 0, .5), 0 2px 8px rgba(0, 0, 0, .4);
+  --sh-pop: 0 18px 50px rgba(0, 0, 0, .6), 0 6px 16px rgba(0, 0, 0, .4);
+  --ring: 0 0 0 4px rgba(99, 117, 248, .32);
+}

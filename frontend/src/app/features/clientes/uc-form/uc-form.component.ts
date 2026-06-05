@@ -5,6 +5,7 @@ import { MAT_DIALOG_DATA, MatDialogModule, MatDialogRef } from '@angular/materia
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatInputModule } from '@angular/material/input';
 import { MatButtonModule } from '@angular/material/button';
+import { MatIconModule } from '@angular/material/icon';
 import { MatSnackBar, MatSnackBarModule } from '@angular/material/snack-bar';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { ClienteService } from '../../../core/services/cliente.service';
@@ -16,39 +17,66 @@ import { EnderecoFormComponent } from '../../../shared';
   standalone: true,
   imports: [
     CommonModule, ReactiveFormsModule, MatDialogModule,
-    MatFormFieldModule, MatInputModule, MatButtonModule,
+    MatFormFieldModule, MatInputModule, MatButtonModule, MatIconModule,
     MatSnackBarModule, MatProgressSpinnerModule, EnderecoFormComponent
   ],
   template: `
-    <h2 mat-dialog-title>{{ editando ? 'Editar' : 'Nova' }} Unidade Consumidora</h2>
+    <div class="dialog-header">
+      <div class="dialog-chip"><mat-icon>business</mat-icon></div>
+      <h2 mat-dialog-title>{{ editando ? 'Editar' : 'Nova' }} Unidade Consumidora</h2>
+    </div>
     <mat-dialog-content>
       <form [formGroup]="form" class="uc-form">
         <div class="row">
           <mat-form-field appearance="outline" class="flex-2">
             <mat-label>Nome</mat-label>
-            <input matInput formControlName="nome">
+            <input matInput formControlName="nome" placeholder="Ex: Sede, Filial Centro">
           </mat-form-field>
           <mat-form-field appearance="outline" class="flex-1">
             <mat-label>Nº Instalação</mat-label>
             <input matInput formControlName="numeroInstalacao">
           </mat-form-field>
         </div>
-        <h4>Endereço</h4>
+        <h4 class="subsection">Endereço</h4>
         <app-endereco-form [form]="enderecoGroup" />
       </form>
     </mat-dialog-content>
     <mat-dialog-actions align="end">
-      <button mat-button mat-dialog-close>Cancelar</button>
+      <button mat-button mat-dialog-close class="btn-ghost">Cancelar</button>
       <button mat-raised-button color="primary" (click)="onSubmit()" [disabled]="loading()">
         @if (loading()) { <mat-spinner diameter="20"></mat-spinner> } @else { Salvar }
       </button>
     </mat-dialog-actions>
   `,
   styles: [`
-    .uc-form { min-width: 500px; }
-    .row { display: flex; gap: 12px; flex-wrap: wrap; }
-    .flex-1 { flex: 1; min-width: 130px; }
-    .flex-2 { flex: 2; min-width: 200px; }
+    .dialog-header {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: 20px 24px 0;
+    }
+    .dialog-chip {
+      width: 32px;
+      height: 32px;
+      border-radius: 9px;
+      background: var(--bolt-500);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      mat-icon { font-size: 18px; width: 18px; height: 18px; color: var(--text-onbrand); }
+    }
+    .uc-form { min-width: 500px; padding-top: 4px; }
+    .subsection {
+      font-size: 14px;
+      font-weight: 600;
+      color: var(--text-soft);
+      margin: 12px 0 8px;
+    }
+    .btn-ghost {
+      border: 1px solid var(--border-strong) !important;
+      border-radius: var(--r-pill) !important;
+      color: var(--text) !important;
+    }
   `]
 })
 export class UcFormComponent implements OnInit {

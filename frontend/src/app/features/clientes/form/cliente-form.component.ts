@@ -6,7 +6,7 @@ import { ReactiveFormsModule, FormBuilder, FormGroup, Validators } from '@angula
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatInputModule } from '@angular/material/input';
 import { MatButtonModule } from '@angular/material/button';
-import { MatCardModule } from '@angular/material/card';
+import { MatIconModule } from '@angular/material/icon';
 import { MatSnackBar, MatSnackBarModule } from '@angular/material/snack-bar';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { NgxMaskDirective } from 'ngx-mask';
@@ -19,61 +19,153 @@ import { EnderecoFormComponent } from '../../../shared';
   standalone: true,
   imports: [
     CommonModule, ReactiveFormsModule,
-    MatFormFieldModule, MatInputModule, MatButtonModule, MatCardModule,
+    MatFormFieldModule, MatInputModule, MatButtonModule, MatIconModule,
     MatSnackBarModule, MatProgressSpinnerModule, NgxMaskDirective,
     EnderecoFormComponent
   ],
   template: `
-    <h2>{{ editando ? 'Editar' : 'Novo' }} Cliente</h2>
-    <form [formGroup]="form" (ngSubmit)="onSubmit()">
-      <mat-card>
-        <mat-card-content>
-          <h3>Dados do Cliente</h3>
-          <div class="row">
-            <mat-form-field appearance="outline" class="flex-2">
-              <mat-label>Nome</mat-label>
-              <input matInput formControlName="nome">
-            </mat-form-field>
-            <mat-form-field appearance="outline" class="flex-1">
-              <mat-label>CPF/CNPJ</mat-label>
-              <input matInput formControlName="documento" [mask]="docMask" [dropSpecialCharacters]="false">
-            </mat-form-field>
+    <div class="form-page">
+      <form [formGroup]="form" (ngSubmit)="onSubmit()">
+        <!-- Seção: Dados do Cliente -->
+        <section class="form-section">
+          <div class="section-header">
+            <div class="section-chip"><mat-icon>person</mat-icon></div>
+            <h3>Dados do Cliente</h3>
           </div>
-          <h4>Endereço</h4>
-          <app-endereco-form [form]="enderecoGroup" />
-
-          @if (!editando) {
-            <h3 style="margin-top:16px">Unidade Consumidora Inicial</h3>
-            <div class="row" formGroupName="uc">
+          <div class="section-body">
+            <div class="row">
               <mat-form-field appearance="outline" class="flex-2">
-                <mat-label>Nome da UC</mat-label>
-                <input matInput formControlName="nome">
+                <mat-label>Nome</mat-label>
+                <input matInput formControlName="nome" placeholder="Nome completo ou razão social">
               </mat-form-field>
               <mat-form-field appearance="outline" class="flex-1">
-                <mat-label>Nº Instalação</mat-label>
-                <input matInput formControlName="numeroInstalacao">
+                <mat-label>CPF/CNPJ</mat-label>
+                <input matInput formControlName="documento" [mask]="docMask" [dropSpecialCharacters]="false"
+                       placeholder="Digite o documento">
               </mat-form-field>
             </div>
-            <app-endereco-form [form]="ucEnderecoGroup" />
-            <p class="hint">Após criar, gerencie as UCs na tela de detalhe do cliente.</p>
-          }
-        </mat-card-content>
-      </mat-card>
+          </div>
+        </section>
 
-      <div class="form-actions">
-        <button mat-button type="button" (click)="voltar()">Cancelar</button>
-        <button mat-raised-button color="primary" type="submit" [disabled]="loading()">
-          @if (loading()) { <mat-spinner diameter="20"></mat-spinner> } @else { Salvar }
-        </button>
-      </div>
-    </form>
+        <!-- Seção: Endereço -->
+        <section class="form-section">
+          <div class="section-header">
+            <div class="section-chip accent"><mat-icon>location_on</mat-icon></div>
+            <h3>Endereço</h3>
+          </div>
+          <div class="section-body">
+            <app-endereco-form [form]="enderecoGroup" />
+          </div>
+        </section>
+
+        <!-- Seção: UC Inicial (só na criação) -->
+        @if (!editando) {
+          <section class="form-section">
+            <div class="section-header">
+              <div class="section-chip info"><mat-icon>business</mat-icon></div>
+              <h3>Unidade Consumidora Inicial</h3>
+            </div>
+            <div class="section-body" formGroupName="uc">
+              <div class="row">
+                <mat-form-field appearance="outline" class="flex-2">
+                  <mat-label>Nome da UC</mat-label>
+                  <input matInput formControlName="nome" placeholder="Ex: Sede, Filial Centro">
+                </mat-form-field>
+                <mat-form-field appearance="outline" class="flex-1">
+                  <mat-label>Nº Instalação</mat-label>
+                  <input matInput formControlName="numeroInstalacao">
+                </mat-form-field>
+              </div>
+              <app-endereco-form [form]="ucEnderecoGroup" />
+              <p class="hint">Após criar, gerencie as UCs na tela de detalhe do cliente.</p>
+            </div>
+          </section>
+        }
+
+        <!-- Barra de ações fixa -->
+        <div class="form-actions-bar">
+          <div class="form-actions-inner">
+            <button mat-button type="button" (click)="voltar()" class="btn-ghost">
+              <mat-icon>arrow_back</mat-icon> Cancelar
+            </button>
+            <button mat-raised-button color="primary" type="submit" [disabled]="loading()">
+              @if (loading()) { <mat-spinner diameter="20"></mat-spinner> } @else { Salvar }
+            </button>
+          </div>
+        </div>
+      </form>
+    </div>
   `,
   styles: [`
-    .row { display: flex; gap: 12px; flex-wrap: wrap; }
-    .flex-1 { flex: 1; min-width: 150px; }
-    .flex-2 { flex: 2; min-width: 200px; }
-    .form-actions { display: flex; justify-content: flex-end; gap: 12px; margin-top: 16px; }
-    .hint { color: #888; font-size: 13px; margin-top: 8px; }
+    .form-page {
+      max-width: 920px;
+    }
+
+    .form-section {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--r-lg);
+      box-shadow: var(--sh-1);
+      margin-bottom: 20px;
+      overflow: hidden;
+    }
+
+    .section-header {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: 16px 22px;
+      border-bottom: 1px solid var(--border);
+    }
+
+    .section-chip {
+      width: 32px;
+      height: 32px;
+      border-radius: 9px;
+      background: var(--bolt-500);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      mat-icon { font-size: 18px; width: 18px; height: 18px; color: var(--text-onbrand); }
+
+      &.accent { background: var(--accent-600); }
+      &.info { background: var(--info-fg); }
+    }
+
+    .section-body {
+      padding: 20px 22px;
+    }
+
+    .hint {
+      font-size: 12.5px;
+      font-weight: 500;
+      color: var(--text-faint);
+      margin: 8px 0 0;
+    }
+
+    .btn-ghost {
+      border: 1px solid var(--border-strong) !important;
+      border-radius: var(--r-pill) !important;
+      color: var(--text) !important;
+      mat-icon { font-size: 18px; margin-right: 4px; }
+    }
+
+    .form-actions-bar {
+      position: sticky;
+      bottom: 0;
+      background: var(--surface);
+      border-top: 1px solid var(--border);
+      margin: 0 -28px -26px;
+      padding: 14px 28px;
+      z-index: 10;
+    }
+
+    .form-actions-inner {
+      display: flex;
+      justify-content: flex-end;
+      gap: 12px;
+      max-width: 920px;
+    }
   `]
 })
 export class ClienteFormComponent implements OnInit {

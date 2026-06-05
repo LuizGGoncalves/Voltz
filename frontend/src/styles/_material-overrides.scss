@@ -1,0 +1,340 @@
+// ============================================
+// Angular Material Overrides — Bolt Energy DS
+// ============================================
+// Sobrescreve componentes Material para usar tokens.
+// Importar DEPOIS do tema Material no styles.scss.
+
+// -- Botoes --
+.mat-mdc-raised-button.mat-primary,
+.mat-mdc-unelevated-button.mat-primary {
+  --mdc-filled-button-container-color: var(--bolt-500);
+  --mdc-filled-button-label-text-color: var(--text-onbrand);
+  border-radius: var(--r-pill) !important;
+  height: 42px;
+  font-family: var(--font-ui);
+  font-weight: 600;
+  font-size: 14px;
+  letter-spacing: 0;
+  transition: background var(--dur) var(--ease), box-shadow var(--dur) var(--ease), transform 0.08s var(--ease);
+
+  &:hover {
+    --mdc-filled-button-container-color: var(--bolt-600);
+  }
+  &:focus-visible {
+    box-shadow: var(--ring);
+  }
+  &:active {
+    transform: scale(.99);
+  }
+}
+
+// Ghost button (stroked / outline)
+.mat-mdc-outlined-button,
+.mat-mdc-button.mat-unthemed {
+  border-radius: var(--r-pill) !important;
+  height: 42px;
+  font-family: var(--font-ui);
+  font-weight: 600;
+  border-color: var(--border-strong);
+  color: var(--text);
+
+  &:hover {
+    background: var(--surface-2);
+  }
+  &:focus-visible {
+    box-shadow: var(--ring);
+  }
+}
+
+// Soft button
+.btn-soft {
+  background: var(--bolt-tint) !important;
+  color: var(--bolt-700) !important;
+  border: none !important;
+  border-radius: var(--r-pill) !important;
+  height: 42px;
+  font-family: var(--font-ui);
+  font-weight: 600;
+
+  &:hover {
+    filter: brightness(.96);
+  }
+}
+
+// Icon button
+.mat-mdc-icon-button {
+  width: 38px;
+  height: 38px;
+  border-radius: 10px;
+  color: var(--text-soft);
+  transition: background var(--dur) var(--ease);
+
+  &:hover {
+    background: var(--surface-2);
+  }
+  &.btn-danger:hover {
+    background: var(--danger-bg);
+    color: var(--danger-fg);
+  }
+  &:focus-visible {
+    box-shadow: var(--ring);
+  }
+}
+
+// -- Form Fields --
+.mat-mdc-form-field {
+  --mdc-outlined-text-field-outline-color: var(--border-strong);
+  --mdc-outlined-text-field-hover-outline-color: var(--text-faint);
+  --mdc-outlined-text-field-focus-outline-color: var(--bolt-500);
+  --mdc-outlined-text-field-label-text-color: var(--text-soft);
+  --mdc-outlined-text-field-input-text-color: var(--text);
+  --mdc-outlined-text-field-container-shape: var(--r-md);
+  --mdc-filled-text-field-container-color: var(--field-readonly);
+  font-family: var(--font-ui);
+
+  .mdc-text-field--outlined {
+    --mdc-outlined-text-field-outline-width: 1.5px;
+    --mdc-outlined-text-field-focus-outline-width: 2px;
+  }
+
+  .mat-mdc-form-field-focus-overlay {
+    display: none;
+  }
+
+  &.mat-focused {
+    .mdc-notched-outline {
+      box-shadow: var(--ring);
+      border-radius: var(--r-md);
+    }
+  }
+
+  input.mat-mdc-input-element {
+    font-family: var(--font-ui);
+    font-size: 15px;
+    color: var(--text);
+  }
+
+  .mat-mdc-form-field-hint {
+    font-size: 12.5px;
+    color: var(--text-faint);
+  }
+
+  .mat-mdc-form-field-error {
+    font-size: 12.5px;
+    color: var(--danger-fg);
+  }
+}
+
+// Readonly fields — borda tracejada
+.field-readonly .mdc-notched-outline__leading,
+.field-readonly .mdc-notched-outline__notch,
+.field-readonly .mdc-notched-outline__trailing {
+  border-style: dashed !important;
+}
+.field-readonly input {
+  color: var(--text-soft) !important;
+}
+
+// -- Tabela --
+.mat-mdc-table {
+  --mat-table-background-color: var(--surface);
+  --mat-table-row-item-outline-color: var(--border);
+  font-family: var(--font-ui);
+  background: var(--surface);
+
+  .mat-mdc-header-cell {
+    font-size: 12px;
+    font-weight: 700;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+    color: var(--text-faint);
+    border-bottom: 1.5px solid var(--border);
+    background: var(--surface);
+  }
+
+  .mat-mdc-cell {
+    font-size: 14px;
+    color: var(--text);
+    padding: 15px 16px;
+    border-bottom: 1px solid var(--border);
+    vertical-align: middle;
+  }
+
+  .mat-mdc-row:hover {
+    background: var(--hover-row);
+  }
+
+  .mono {
+    font-variant-numeric: tabular-nums;
+  }
+}
+
+// -- Card --
+.mat-mdc-card {
+  --mdc-elevated-card-container-color: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--r-lg) !important;
+  box-shadow: var(--sh-1) !important;
+}
+
+// Card header (para tabelas)
+.card-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 16px 22px;
+  border-bottom: 1px solid var(--border);
+
+  h2, h3 {
+    margin: 0;
+    font-family: var(--font-display);
+    font-size: 17px;
+    font-weight: 700;
+    letter-spacing: -0.02em;
+    color: var(--text);
+  }
+
+  .count-badge {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 24px;
+    height: 24px;
+    padding: 0 8px;
+    margin-left: 8px;
+    border-radius: var(--r-pill);
+    background: var(--surface-2);
+    font-size: 12px;
+    font-weight: 700;
+    color: var(--text-soft);
+  }
+}
+
+// -- Paginator --
+.mat-mdc-paginator {
+  --mat-paginator-container-background-color: var(--surface);
+  --mat-paginator-container-text-color: var(--text-soft);
+  --mat-paginator-enabled-icon-color: var(--text-soft);
+  --mat-paginator-disabled-icon-color: var(--text-faint);
+  font-family: var(--font-ui);
+  font-size: 13px;
+  color: var(--text-soft);
+  border-top: 1px solid var(--border);
+
+  .mat-mdc-paginator-range-label {
+    color: var(--text-soft);
+  }
+
+  .mat-mdc-icon-button {
+    color: var(--text-soft);
+
+    &[disabled] {
+      color: var(--text-faint);
+      opacity: 0.4;
+    }
+
+    .mat-mdc-paginator-icon {
+      fill: currentColor;
+    }
+  }
+
+  .mat-mdc-select-value {
+    color: var(--text-soft);
+  }
+}
+
+// -- Dialog --
+.mat-mdc-dialog-container {
+  --mdc-dialog-container-color: var(--surface);
+  --mdc-dialog-container-shape: var(--r-lg);
+
+  .mdc-dialog__surface {
+    box-shadow: var(--sh-pop) !important;
+  }
+}
+
+.mat-mdc-dialog-title {
+  font-family: var(--font-display) !important;
+  font-size: 18px !important;
+  font-weight: 700 !important;
+  color: var(--text) !important;
+  letter-spacing: -0.02em !important;
+}
+
+.mat-mdc-dialog-actions {
+  background: var(--surface-2);
+  border-top: 1px solid var(--border);
+  padding: 14px 22px !important;
+}
+
+// -- Snackbar / Toast --
+.mat-mdc-snack-bar-container {
+  --mdc-snackbar-container-color: #1b1f27;
+  --mdc-snackbar-supporting-text-color: #eef2f1;
+  border-radius: var(--r-md) !important;
+
+  .mdc-snackbar__surface {
+    box-shadow: var(--sh-pop) !important;
+  }
+}
+
+// -- Slide toggle --
+.mat-mdc-slide-toggle {
+  --mdc-switch-selected-track-color: var(--bolt-500);
+  --mdc-switch-selected-hover-track-color: var(--bolt-600);
+  --mdc-switch-selected-focus-track-color: var(--bolt-500);
+  --mdc-switch-selected-pressed-track-color: var(--bolt-600);
+  --mdc-switch-selected-handle-color: #ffffff;
+  --mdc-switch-unselected-track-color: var(--border-strong);
+
+  .mdc-label {
+    font-family: var(--font-ui);
+    font-size: 14px;
+    color: var(--text-soft);
+  }
+}
+
+// -- Button toggle (segmented) --
+.mat-button-toggle-group {
+  border: 1px solid var(--border) !important;
+  border-radius: var(--r-md) !important;
+  background: var(--surface-2);
+  overflow: hidden;
+
+  .mat-button-toggle {
+    font-family: var(--font-ui);
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--text-soft);
+    border: none !important;
+
+    &.mat-button-toggle-checked {
+      background: var(--surface);
+      color: var(--text);
+      box-shadow: var(--sh-1);
+    }
+
+    .mat-button-toggle-label-content {
+      padding: 0 16px;
+      line-height: 38px;
+    }
+  }
+}
+
+// -- Toolbar override (removido — usamos topbar custom) --
+.mat-mdc-toolbar {
+  font-family: var(--font-ui);
+}
+
+// -- Spinner --
+.mat-mdc-progress-spinner {
+  --mdc-circular-progress-active-indicator-color: var(--bolt-500);
+}
+
+// -- Tooltip --
+.mat-mdc-tooltip {
+  --mdc-plain-tooltip-container-color: #1b1f27;
+  --mdc-plain-tooltip-supporting-text-color: #eef2f1;
+  font-family: var(--font-ui);
+  font-size: 12px;
+}

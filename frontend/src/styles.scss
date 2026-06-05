@@ -1,8 +1,12 @@
+// ============================================
+// Bolt Energy — Global Styles
+// ============================================
 
-// Custom Theming for Angular Material
-// For more information: https://material.angular.dev/guide/theming
 @use '@angular/material' as mat;
+@import 'styles/tokens';
+@import 'styles/material-overrides';
 
+// -- Angular Material base theme --
 html {
   @include mat.theme((
     color: (
@@ -10,10 +14,102 @@ html {
       primary: mat.$azure-palette,
       tertiary: mat.$blue-palette,
     ),
-    typography: Roboto,
+    typography: Manrope,
     density: 0,
   ));
-}/* You can add global styles to this file, and also import other style files */
+}
 
-html, body { height: 100%; }
-body { margin: 0; font-family: Roboto, "Helvetica Neue", sans-serif; }
+// -- Reset & global --
+*, *::before, *::after { box-sizing: border-box; }
+
+html, body {
+  height: 100%;
+  margin: 0;
+}
+
+body {
+  font-family: var(--font-ui);
+  font-size: 15px;
+  line-height: 1.5;
+  color: var(--text);
+  background: var(--bg);
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+// -- Tipografia --
+h1, h2, h3, h4 {
+  font-family: var(--font-display);
+  color: var(--text);
+  letter-spacing: -0.02em;
+  margin: 0;
+}
+
+h1 { font-size: 22px; font-weight: 700; }
+h2 { font-size: 18px; font-weight: 700; }
+h3 { font-size: 16px; font-weight: 700; }
+h4 { font-size: 15px; font-weight: 600; }
+
+p { color: var(--text-soft); }
+
+a { color: var(--bolt-700); text-decoration: none; }
+
+// -- Numeros tabulares --
+.mono {
+  font-variant-numeric: tabular-nums;
+}
+
+// -- Text wrap --
+p, .text-pretty {
+  text-wrap: pretty;
+}
+
+// -- Foco acessivel --
+:focus-visible {
+  outline: none;
+  box-shadow: var(--ring);
+  border-radius: var(--r-sm);
+}
+
+// -- Scrollbar custom --
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+::-webkit-scrollbar-thumb {
+  background: var(--border-strong);
+  border-radius: 3px;
+}
+
+// -- Entrada de pagina --
+@keyframes pageEnter {
+  from {
+    opacity: 0;
+    transform: translateY(6px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.page-enter {
+  animation: pageEnter 0.26s var(--ease);
+}
+
+// -- Utilidades --
+.flex-1 { flex: 1; min-width: 130px; }
+.flex-2 { flex: 2; min-width: 200px; }
+.row { display: flex; gap: 14px; flex-wrap: wrap; }
+.full-width { width: 100%; }
+.center { display: flex; justify-content: center; padding: 48px; }
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    transition-duration: 0.01ms !important;
+  }
+}
