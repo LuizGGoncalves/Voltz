@@ -8,6 +8,9 @@ import com.treinamento.clientes.service.RefreshTokenService
 import org.slf4j.LoggerFactory
 import com.treinamento.clientes.web.dto.LoginRequest
 import com.treinamento.clientes.web.dto.LoginResponse
+import io.swagger.v3.oas.annotations.Operation
+import io.swagger.v3.oas.annotations.responses.ApiResponse
+import io.swagger.v3.oas.annotations.tags.Tag
 import jakarta.servlet.http.HttpServletRequest
 import jakarta.servlet.http.HttpServletResponse
 import jakarta.validation.Valid
@@ -24,6 +27,7 @@ import org.springframework.security.core.authority.SimpleGrantedAuthority
 import org.springframework.security.core.userdetails.UsernameNotFoundException
 import org.springframework.web.bind.annotation.*
 
+@Tag(name = "Autenticação", description = "Login, refresh token e logout")
 @RestController
 @RequestMapping("/api/v1/auth")
 class AuthController(
@@ -36,6 +40,15 @@ class AuthController(
 
     private val log = LoggerFactory.getLogger(javaClass)
 
+    @Operation(
+        summary = "Login",
+        description = "Autentica com username/senha e retorna access token JWT + refresh token em cookie httpOnly. Rate limit: 5 tentativas / 15 min por IP.",
+        responses = [
+            ApiResponse(responseCode = "200", description = "Login bem-sucedido — access token no body, refresh token no cookie"),
+            ApiResponse(responseCode = "401", description = "Credenciais inválidas"),
+            ApiResponse(responseCode = "429", description = "Rate limit excedido (5 tentativas / 15 min)")
+        ]
+    )
     @PostMapping("/login")
     fun login(
         @Valid @RequestBody loginRequest: LoginRequest,
@@ -76,6 +89,14 @@ class AuthController(
         )
     }
 
+    @Operation(
+        summary = "Renovar tokens",
+        description = "Usa o refresh token (cookie httpOnly) para emitir novo par access + refresh. O refresh antigo é revogado (rotação).",
+        responses = [
+            ApiResponse(responseCode = "200", description = "Novo par de tokens emitido"),
+            ApiResponse(responseCode = "401", description = "Refresh token ausente, expirado ou revogado")
+        ]
+    )
     @PostMapping("/refresh")
     fun refresh(
         @CookieValue("refresh_token", required = false) refreshToken: String?,
@@ -109,6 +130,14 @@ class AuthController(
         )
     }
 
+    @Operation(
+        summary = "Logout",
+        description = "Revoga o refresh token e limpa o cookie. O access token continua válido até expirar (15 min).",
+        responses = [
+            ApiResponse(responseCode = "204", description = "Logout realizado"),
+            ApiResponse(responseCode = "401", description = "Não autenticado")
+        ]
+    )
     @PreAuthorize("isAuthenticated()")
     @PostMapping("/logout")
     fun logout(
@@ -130,7 +159,7 @@ class AuthController(
     private fun buildRefreshCookie(value: String, maxAge: Long, secure: Boolean): ResponseCookie =
         ResponseCookie.from("refresh_token", value)
             .httpOnly(true)
-            .secure(secure) // Derivado de request.isSecure — acompanha o protocolo automaticamente
+            .secure(secure)
             .path("/api/v1/auth")
             .maxAge(maxAge)
             .sameSite("Lax")
