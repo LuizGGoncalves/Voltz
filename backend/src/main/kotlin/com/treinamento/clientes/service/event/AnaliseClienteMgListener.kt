@@ -19,12 +19,17 @@ class AnaliseClienteMgListener(
     @Async
     @TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT)
     fun onAnaliseClienteMg(event: AnaliseClienteMgEvent) {
-        log.info("Registrando análise MG — cliente={}, uc={}", event.clienteId, event.unidadeConsumidoraId)
-        repository.save(
-            AnaliseClienteMg(
-                clienteId = event.clienteId,
-                unidadeConsumidoraId = event.unidadeConsumidoraId
+        try {
+            log.info("Registrando análise MG — cliente={}, uc={}", event.clienteId, event.unidadeConsumidoraId)
+            repository.save(
+                AnaliseClienteMg(
+                    clienteId = event.clienteId,
+                    unidadeConsumidoraId = event.unidadeConsumidoraId
+                )
             )
-        )
+        } catch (ex: Exception) {
+            log.error("Falha ao registrar análise MG — cliente={}, uc={}: {}",
+                event.clienteId, event.unidadeConsumidoraId, ex.message, ex)
+        }
     }
 }
