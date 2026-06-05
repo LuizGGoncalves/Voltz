@@ -55,10 +55,14 @@
 - **Problema:** Brute force ilimitado no `/auth/login`
 - **Solução aplicada:** `bucket4j` com `RateLimitService` — 5 tentativas a cada 15 minutos por IP. Excedido → 429 Too Many Requests (ProblemDetail). Log de warning com IP. `RateLimitExceededException` + handler no GlobalExceptionHandler
 
-### C7. Logout/Refresh sem `@PreAuthorize` explícito
-- **Onde:** `AuthController.kt`
-- **Problema:** Depende apenas do SecurityConfig; sem defesa em profundidade
-- **Fix:** Adicionar `@PreAuthorize("isAuthenticated()")` em `/logout` e `/refresh`
+### ~~C7. Logout/Refresh sem `@PreAuthorize` explícito~~ — RESOLVIDO
+- **Onde:** `AuthController.kt` + `SecurityConfig.kt`
+- **Problema:** `/api/v1/auth/**` como `permitAll()` genérico; sem defesa em profundidade
+- **Solução aplicada:**
+  - SecurityConfig: rotas de auth granulares (`/login` permitAll, `/refresh` permitAll, `/logout` authenticated) em vez do wildcard `/**`
+  - `/logout`: `@PreAuthorize("isAuthenticated()")` — defesa em profundidade (2 camadas: SecurityConfig + método)
+  - `/refresh`: `permitAll()` porque o access token pode estar expirado (cliente só tem o cookie); proteção vem da validação do refresh token no `RefreshTokenService`
+  - **Justificativa:** separar rotas explicitamente evita que alterações futuras no SecurityConfig exponham endpoints por acidente. O `@PreAuthorize` no logout garante proteção mesmo se a regra de rota mudar
 
 ---
 

@@ -40,7 +40,9 @@ class SecurityConfig(
             .sessionManagement { it.sessionCreationPolicy(SessionCreationPolicy.STATELESS) }
             .authorizeHttpRequests { auth ->
                 auth
-                    .requestMatchers("/api/v1/auth/**").permitAll()
+                    .requestMatchers("/api/v1/auth/login").permitAll()
+                    .requestMatchers("/api/v1/auth/refresh").permitAll()
+                    .requestMatchers("/api/v1/auth/logout").authenticated()
                     .requestMatchers("/actuator/health").permitAll()
                     .requestMatchers("/api/v1/integracoes/viacep/status").permitAll()
                     // Swagger: público em dev (profile), protegido em prod (default).

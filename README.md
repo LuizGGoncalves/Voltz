@@ -149,6 +149,12 @@ O servidor não guarda sessão: cada requisição traz um token assinado que pro
 **Por que monorepo (back e front separados no mesmo repositório)?**
 O projeto é pequeno: não há motivo para espalhá-lo em vários repositórios. Um repositório só, com `/backend` e `/frontend` em pastas separadas, facilita rodar tudo junto (`docker compose up`), manter front e back em sincronia (commits/PRs atômicos) e desenvolver com apoio de IA (que enxerga o sistema inteiro de uma vez).
 
+**Por que rate limiting no login (bucket4j)?**
+Sem limitação, um atacante pode tentar senhas infinitamente (brute force). O `bucket4j` limita a 5 tentativas a cada 15 minutos por IP — lib madura do ecossistema Java, sem infra externa. Excedido → 429 "Muitas tentativas". Em produção, pode ser complementado por rate limiting no API Gateway/ALB.
+
+**Por que defesa em profundidade na segurança (SecurityConfig + @PreAuthorize)?**
+A proteção de rotas no `SecurityConfig` é a primeira camada. Mas se alguém alterar o config por engano (ex.: trocar um matcher), endpoints ficam expostos. O `@PreAuthorize` no método é a segunda camada — mesmo que o config mude, o método se protege sozinho. Duas camadas independentes; uma falha não compromete a outra. Padrão recomendado pelo Spring Security para ações sensíveis.
+
 ---
 
 ## 7. Histórico de mudanças de decisão
@@ -165,7 +171,12 @@ O projeto é pequeno: não há motivo para espalhá-lo em vários repositórios.
 | 2026-06-04 | D18 (erros) | Confirmado **RFC 7807 (ProblemDetail)** em vez de formato custom | Usar o padrão nativo do Spring, interoperável |
 | 2026-06-04 | Risco "volume de features" | Reclassificado de 🔴 (cortar) → 🟡 (**priorizar**) | Todas as features são obrigatórias; mitigação é ordem de execução, nada é cortado |
 | 2026-06-05 | Proxy de dev | De **nginx reverse proxy** → **`proxy.conf.json` do Angular CLI** | Nginx era overengineering para dev: container extra, config manual de rotas, manutenção. O proxy do Angular CLI é a solução padrão documentada, zero containers extras, mesma garantia de same-origin para cookie httpOnly |
-| 2026-06-05 | Swagger (C1) | De **público** → **controlado por env var** (`SPRINGDOC_PUBLIC_ACCESS`, default `false`) | Velocidade no dev local (público) com segurança em produção (protegido por padrão) |
+| 2026-06-05 | Swagger (C1) | De **público** → **controlado por Spring profile** (dev=público, prod=protegido) | Velocidade no dev local com segurança em produção. Profile em vez de env var solta |
+| 2026-06-05 | Cookie secure (C2) | De **`secure=false` hardcoded** → **`request.isSecure`** | Acompanha o protocolo automaticamente (HTTP→false, HTTPS→true). Padrão Spring Boot para apps atrás de proxy |
+| 2026-06-05 | JWT key (C3) | De **lógica duplicada + padding zeros** → **bean centralizado + fail fast** | SecretKeySpec como bean único; `require >= 32 bytes`; Spring profiles (dev/prod) em vez de booleans soltos |
+| 2026-06-05 | Auth safety (C4/C5) | De **`.get()` e `RuntimeException`** → **`UsernameNotFoundException`** | Exceção do Spring Security tratada nativamente como 401; sem handler extra |
+| 2026-06-05 | Rate limiting (C6) | **Adicionado** `bucket4j` no `/auth/login` | 5 tentativas / 15 min por IP; 429 Too Many Requests; lib madura sem infra externa |
+| 2026-06-05 | Defesa em profundidade (C7) | De **`/auth/**` wildcard** → **rotas granulares + `@PreAuthorize`** | Duas camadas independentes: SecurityConfig (rota) + @PreAuthorize (método). Uma falha não compromete a outra |
 
 *(novas entradas vão sendo adicionadas conforme o projeto evolui)*
 
