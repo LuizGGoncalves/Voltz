@@ -5,12 +5,11 @@ import org.springframework.data.domain.Page
 import org.springframework.data.domain.Pageable
 import org.springframework.data.jpa.repository.JpaRepository
 import org.springframework.data.jpa.repository.Query
-import java.util.Optional
 
 interface ClienteRepository : JpaRepository<Cliente, Long> {
 
     @Query("SELECT c FROM Cliente c LEFT JOIN FETCH c.unidadesConsumidoras WHERE c.id = :id")
-    fun findByIdWithUCs(id: Long): Optional<Cliente>
+    fun findByIdWithUCs(id: Long): Cliente?
 
     fun findAllByAtivoTrue(pageable: Pageable): Page<Cliente>
 

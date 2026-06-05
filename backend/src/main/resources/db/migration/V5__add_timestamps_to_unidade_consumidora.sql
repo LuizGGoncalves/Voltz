@@ -1,0 +1,3 @@
+ALTER TABLE unidade_consumidora
+    ADD COLUMN created_at TIMESTAMPTZ NOT NULL DEFAULT now(),
+    ADD COLUMN updated_at TIMESTAMPTZ DEFAULT now();

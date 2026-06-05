@@ -15,23 +15,27 @@ class GlobalExceptionHandler {
 
     @ExceptionHandler(ClienteNaoEncontradoException::class)
     fun handleNotFound(ex: ClienteNaoEncontradoException): ProblemDetail =
-        ProblemDetail.forStatusAndDetail(HttpStatus.NOT_FOUND, ex.message!!)
+        ProblemDetail.forStatusAndDetail(HttpStatus.NOT_FOUND, ex.message.orEmpty())
 
     @ExceptionHandler(UcNaoEncontradaException::class)
     fun handleUcNotFound(ex: UcNaoEncontradaException): ProblemDetail =
-        ProblemDetail.forStatusAndDetail(HttpStatus.NOT_FOUND, ex.message!!)
+        ProblemDetail.forStatusAndDetail(HttpStatus.NOT_FOUND, ex.message.orEmpty())
+
+    @ExceptionHandler(CadastroPendenteNaoEncontradoException::class)
+    fun handlePendenteNotFound(ex: CadastroPendenteNaoEncontradoException): ProblemDetail =
+        ProblemDetail.forStatusAndDetail(HttpStatus.NOT_FOUND, ex.message.orEmpty())
 
     @ExceptionHandler(DocumentoDuplicadoException::class)
     fun handleConflict(ex: DocumentoDuplicadoException): ProblemDetail =
-        ProblemDetail.forStatusAndDetail(HttpStatus.CONFLICT, ex.message!!)
+        ProblemDetail.forStatusAndDetail(HttpStatus.CONFLICT, ex.message.orEmpty())
 
     @ExceptionHandler(InstalacaoDuplicadaException::class)
     fun handleInstalacaoConflict(ex: InstalacaoDuplicadaException): ProblemDetail =
-        ProblemDetail.forStatusAndDetail(HttpStatus.CONFLICT, ex.message!!)
+        ProblemDetail.forStatusAndDetail(HttpStatus.CONFLICT, ex.message.orEmpty())
 
     @ExceptionHandler(DocumentoInvalidoException::class)
     fun handleDocumentoInvalido(ex: DocumentoInvalidoException): ProblemDetail =
-        ProblemDetail.forStatusAndDetail(HttpStatus.BAD_REQUEST, ex.message!!)
+        ProblemDetail.forStatusAndDetail(HttpStatus.BAD_REQUEST, ex.message.orEmpty())
 
     @ExceptionHandler(MethodArgumentNotValidException::class)
     fun handleValidation(ex: MethodArgumentNotValidException): ProblemDetail {
@@ -43,23 +47,23 @@ class GlobalExceptionHandler {
 
     @ExceptionHandler(UfBloqueadaException::class)
     fun handleUfBloqueada(ex: UfBloqueadaException): ProblemDetail =
-        ProblemDetail.forStatusAndDetail(HttpStatus.UNPROCESSABLE_ENTITY, ex.message!!)
+        ProblemDetail.forStatusAndDetail(HttpStatus.UNPROCESSABLE_ENTITY, ex.message.orEmpty())
 
     @ExceptionHandler(CepNaoEncontradoException::class)
     fun handleCepNaoEncontrado(ex: CepNaoEncontradoException): ProblemDetail =
-        ProblemDetail.forStatusAndDetail(HttpStatus.UNPROCESSABLE_ENTITY, ex.message!!)
+        ProblemDetail.forStatusAndDetail(HttpStatus.UNPROCESSABLE_ENTITY, ex.message.orEmpty())
 
     @ExceptionHandler(CepInvalidoException::class)
     fun handleCepInvalido(ex: CepInvalidoException): ProblemDetail =
-        ProblemDetail.forStatusAndDetail(HttpStatus.UNPROCESSABLE_ENTITY, ex.message!!)
+        ProblemDetail.forStatusAndDetail(HttpStatus.UNPROCESSABLE_ENTITY, ex.message.orEmpty())
 
     @ExceptionHandler(ViaCepIndisponivelException::class)
     fun handleViaCepIndisponivel(ex: ViaCepIndisponivelException): ProblemDetail =
-        ProblemDetail.forStatusAndDetail(HttpStatus.SERVICE_UNAVAILABLE, ex.message!!)
+        ProblemDetail.forStatusAndDetail(HttpStatus.SERVICE_UNAVAILABLE, ex.message.orEmpty())
 
     @ExceptionHandler(LimiteTentativasExcedidoException::class)
     fun handleRateLimit(ex: LimiteTentativasExcedidoException): ProblemDetail =
-        ProblemDetail.forStatusAndDetail(HttpStatus.TOO_MANY_REQUESTS, ex.message!!)
+        ProblemDetail.forStatusAndDetail(HttpStatus.TOO_MANY_REQUESTS, ex.message.orEmpty())
 
     @ExceptionHandler(OptimisticLockingFailureException::class)
     fun handleOptimisticLocking(ex: OptimisticLockingFailureException): ProblemDetail =

@@ -63,7 +63,7 @@ class AuthController(
 
         val usuario = usuarioRepository.findByUsername(authentication.name)
             .orElseThrow { UsernameNotFoundException("Usuário não encontrado: ${authentication.name}") }
-        refreshTokenService.criar(usuario.id!!, rawRefreshToken)
+        refreshTokenService.criar(requireNotNull(usuario.id), rawRefreshToken)
 
         val cookie = buildRefreshCookie(rawRefreshToken, jwtService.getRefreshExpirationMs() / 1000, httpRequest.isSecure)
         response.addHeader(HttpHeaders.SET_COOKIE, cookie.toString())
@@ -96,7 +96,7 @@ class AuthController(
         val authorities = usuario.roles.map { SimpleGrantedAuthority("ROLE_${it.nome}") }
         val accessToken = jwtService.gerarAccessToken(usuario.username, authorities)
         val newRawRefreshToken = jwtService.gerarRefreshToken()
-        refreshTokenService.criar(usuario.id!!, newRawRefreshToken)
+        refreshTokenService.criar(requireNotNull(usuario.id), newRawRefreshToken)
 
         val cookie = buildRefreshCookie(newRawRefreshToken, jwtService.getRefreshExpirationMs() / 1000, httpRequest.isSecure)
         response.addHeader(HttpHeaders.SET_COOKIE, cookie.toString())

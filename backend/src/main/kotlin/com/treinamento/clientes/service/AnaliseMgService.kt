@@ -16,7 +16,7 @@ class AnaliseMgService(
     fun listar(pageable: Pageable): Page<AnaliseClienteMgResponse> =
         repository.findAllByOrderByCreatedAtDesc(pageable).map {
             AnaliseClienteMgResponse(
-                id = it.id!!,
+                id = requireNotNull(it.id),
                 clienteId = it.clienteId,
                 unidadeConsumidoraId = it.unidadeConsumidoraId,
                 status = it.status,

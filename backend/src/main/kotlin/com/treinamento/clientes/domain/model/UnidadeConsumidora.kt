@@ -2,10 +2,15 @@ package com.treinamento.clientes.domain.model
 
 import jakarta.persistence.*
 import org.hibernate.annotations.SQLDelete
+import org.springframework.data.annotation.CreatedDate
+import org.springframework.data.annotation.LastModifiedDate
+import org.springframework.data.jpa.domain.support.AuditingEntityListener
+import java.time.Instant
 
 @Entity
 @Table(name = "unidade_consumidora")
 @SQLDelete(sql = "UPDATE unidade_consumidora SET ativo = false WHERE id = ? AND version = ?")
+@EntityListeners(AuditingEntityListener::class)
 class UnidadeConsumidora(
 
     @Id
@@ -38,5 +43,13 @@ class UnidadeConsumidora(
     var ativo: Boolean = true,
 
     @Version
-    var version: Long = 0
+    var version: Long = 0,
+
+    @CreatedDate
+    @Column(name = "created_at", nullable = false, updatable = false)
+    var createdAt: Instant = Instant.now(),
+
+    @LastModifiedDate
+    @Column(name = "updated_at")
+    var updatedAt: Instant = Instant.now()
 )

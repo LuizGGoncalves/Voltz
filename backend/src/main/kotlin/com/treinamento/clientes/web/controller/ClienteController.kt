@@ -31,7 +31,7 @@ class ClienteController(
         } catch (ex: ViaCepIndisponivelException) {
             val pendente = cadastroPendenteService.enfileirar(request)
             ResponseEntity.status(HttpStatus.ACCEPTED).body(
-                CadastroPendenteCreatedResponse(cadastroPendenteId = pendente.id!!)
+                CadastroPendenteCreatedResponse(cadastroPendenteId = requireNotNull(pendente.id))
             )
         }
     }

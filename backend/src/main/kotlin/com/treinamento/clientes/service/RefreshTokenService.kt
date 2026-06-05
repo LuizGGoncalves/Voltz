@@ -6,15 +6,19 @@ import com.treinamento.clientes.security.JwtProperties
 import org.springframework.security.core.userdetails.UsernameNotFoundException
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
-import java.security.MessageDigest
 import java.time.Instant
 import java.util.*
+import javax.crypto.Mac
+import javax.crypto.spec.SecretKeySpec
 
 @Service
 class RefreshTokenService(
     private val refreshTokenRepository: RefreshTokenRepository,
     private val jwtProperties: JwtProperties
 ) {
+    private val hmacKey: SecretKeySpec by lazy {
+        SecretKeySpec(jwtProperties.secret.toByteArray(), "HmacSHA256")
+    }
 
     @Transactional
     fun criar(usuarioId: Long, rawToken: String): RefreshToken {
@@ -29,7 +33,7 @@ class RefreshTokenService(
     @Transactional(readOnly = true)
     fun validar(rawToken: String): RefreshToken {
         val token = refreshTokenRepository.findByTokenHashAndRevogadoFalse(hash(rawToken))
-            .orElseThrow { UsernameNotFoundException("Refresh token inválido ou revogado") }
+            ?: throw UsernameNotFoundException("Refresh token inválido ou revogado")
 
         if (token.expiraEm.isBefore(Instant.now())) {
             throw UsernameNotFoundException("Refresh token expirado")
@@ -41,9 +45,9 @@ class RefreshTokenService(
     @Transactional
     fun revogar(rawToken: String) {
         val token = refreshTokenRepository.findByTokenHashAndRevogadoFalse(hash(rawToken))
-        token.ifPresent {
-            it.revogado = true
-            refreshTokenRepository.save(it)
+        if (token != null) {
+            token.revogado = true
+            refreshTokenRepository.save(token)
         }
     }
 
@@ -53,8 +57,9 @@ class RefreshTokenService(
     }
 
     private fun hash(value: String): String {
-        val digest = MessageDigest.getInstance("SHA-256")
-        val bytes = digest.digest(value.toByteArray())
+        val mac = Mac.getInstance("HmacSHA256")
+        mac.init(hmacKey)
+        val bytes = mac.doFinal(value.toByteArray())
         return Base64.getEncoder().encodeToString(bytes)
     }
 }

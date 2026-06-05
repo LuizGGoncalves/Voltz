@@ -3,7 +3,7 @@ package com.treinamento.clientes.service
 import com.fasterxml.jackson.databind.ObjectMapper
 import com.treinamento.clientes.domain.model.CadastroPendente
 import com.treinamento.clientes.domain.vo.Documento
-import com.treinamento.clientes.exception.ClienteNaoEncontradoException
+import com.treinamento.clientes.exception.CadastroPendenteNaoEncontradoException
 import com.treinamento.clientes.exception.DocumentoDuplicadoException
 import com.treinamento.clientes.exception.InstalacaoDuplicadaException
 import com.treinamento.clientes.repository.CadastroPendenteRepository
@@ -45,7 +45,9 @@ class CadastroPendenteService(
             throw DocumentoDuplicadoException(docNormalizado)
         }
 
-        return cadastroPendenteRepository.findByDocumentoAndStatus(docNormalizado, "PENDENTE")!!
+        return requireNotNull(cadastroPendenteRepository.findByDocumentoAndStatus(docNormalizado, "PENDENTE")) {
+            "Cadastro pendente não encontrado após insert: $docNormalizado"
+        }
     }
 
     @Transactional(readOnly = true)
@@ -61,12 +63,12 @@ class CadastroPendenteService(
     @Transactional(readOnly = true)
     fun buscarPorId(id: Long): CadastroPendenteResponse {
         val pendente = cadastroPendenteRepository.findById(id)
-            .orElseThrow { ClienteNaoEncontradoException(id) }
+            .orElseThrow { CadastroPendenteNaoEncontradoException(id) }
         return pendente.toResponse()
     }
 
     private fun CadastroPendente.toResponse() = CadastroPendenteResponse(
-        id = id!!,
+        id = requireNotNull(id),
         documento = documento,
         status = status,
         motivo = motivo,

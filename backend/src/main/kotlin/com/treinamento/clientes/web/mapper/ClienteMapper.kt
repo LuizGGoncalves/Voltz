@@ -29,7 +29,7 @@ fun UnidadeConsumidoraRequest.toModel(): UnidadeConsumidora = UnidadeConsumidora
 )
 
 fun UnidadeConsumidora.toResponse(): UnidadeConsumidoraResponse = UnidadeConsumidoraResponse(
-    id = id!!,
+    id = requireNotNull(id) { "UC id nulo após persist" },
     nome = nome,
     numeroInstalacao = numeroInstalacao,
     endereco = endereco.toResponse(),
@@ -48,24 +48,30 @@ fun ClienteRequest.toModel(): Cliente {
     return cliente
 }
 
-fun Cliente.toResponse(): ClienteResponse = ClienteResponse(
-    id = id!!,
-    nome = nome,
-    documento = documento!!.valor,
-    tipoDocumento = documento!!.tipo.name,
-    ativo = ativo,
-    createdAt = createdAt,
-    updatedAt = updatedAt,
-    endereco = endereco.toResponse(),
-    unidadesConsumidoras = unidadesConsumidoras.map { it.toResponse() }
-)
+fun Cliente.toResponse(): ClienteResponse {
+    val doc = requireNotNull(documento) { "Documento nulo em Cliente" }
+    return ClienteResponse(
+        id = requireNotNull(id) { "Cliente id nulo após persist" },
+        nome = nome,
+        documento = doc.valor,
+        tipoDocumento = doc.tipo.name,
+        ativo = ativo,
+        createdAt = createdAt,
+        updatedAt = updatedAt,
+        endereco = endereco.toResponse(),
+        unidadesConsumidoras = unidadesConsumidoras.map { it.toResponse() }
+    )
+}
 
-fun Cliente.toResumoResponse(): ClienteResumoResponse = ClienteResumoResponse(
-    id = id!!,
-    nome = nome,
-    documento = documento!!.valor,
-    tipoDocumento = documento!!.tipo.name,
-    ativo = ativo,
-    createdAt = createdAt,
-    updatedAt = updatedAt
-)
+fun Cliente.toResumoResponse(): ClienteResumoResponse {
+    val doc = requireNotNull(documento) { "Documento nulo em Cliente" }
+    return ClienteResumoResponse(
+        id = requireNotNull(id) { "Cliente id nulo após persist" },
+        nome = nome,
+        documento = doc.valor,
+        tipoDocumento = doc.tipo.name,
+        ativo = ativo,
+        createdAt = createdAt,
+        updatedAt = updatedAt
+    )
+}

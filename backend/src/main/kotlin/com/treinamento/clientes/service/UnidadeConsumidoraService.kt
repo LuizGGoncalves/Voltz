@@ -1,7 +1,6 @@
 package com.treinamento.clientes.service
 
 import com.treinamento.clientes.domain.event.AnaliseClienteMgEvent
-import com.treinamento.clientes.domain.model.Endereco
 import com.treinamento.clientes.domain.model.UnidadeConsumidora
 import com.treinamento.clientes.domain.rules.UfRules
 import com.treinamento.clientes.exception.ClienteNaoEncontradoException
@@ -38,7 +37,7 @@ class UnidadeConsumidoraService(
 
         val uc = request.toModel()
         val enderecoEnriquecido = viaCepService.consultar(request.endereco.cep)
-        enriquecerEndereco(uc.endereco, enderecoEnriquecido)
+        uc.endereco.enriquecerCom(enderecoEnriquecido)
 
         aplicarRegraUf(uc)
 
@@ -62,7 +61,7 @@ class UnidadeConsumidoraService(
         uc.endereco = request.endereco.toModel()
 
         val enderecoEnriquecido = viaCepService.consultar(request.endereco.cep)
-        enriquecerEndereco(uc.endereco, enderecoEnriquecido)
+        uc.endereco.enriquecerCom(enderecoEnriquecido)
 
         aplicarRegraUf(uc)
 
@@ -106,15 +105,9 @@ class UnidadeConsumidoraService(
         if (uc.endereco.uf.uppercase() == UfRules.EVENTO_MG) {
             log.info("UC '{}' em MG — publicando evento analise_cliente_mg", uc.nome)
             eventPublisher.publishEvent(
-                AnaliseClienteMgEvent(clienteId = clienteId, unidadeConsumidoraId = uc.id!!)
+                AnaliseClienteMgEvent(clienteId = clienteId, unidadeConsumidoraId = requireNotNull(uc.id))
             )
         }
     }
 
-    private fun enriquecerEndereco(destino: Endereco, viaCep: Endereco) {
-        destino.logradouro = viaCep.logradouro
-        destino.bairro = viaCep.bairro
-        destino.cidade = viaCep.cidade
-        destino.uf = viaCep.uf
-    }
 }

@@ -25,4 +25,11 @@ class Endereco(
 
     @Column(nullable = false, length = 2)
     var uf: String = ""
-)
+) {
+    fun enriquecerCom(viaCep: Endereco) {
+        logradouro = viaCep.logradouro
+        bairro = viaCep.bairro
+        cidade = viaCep.cidade
+        uf = viaCep.uf
+    }
+}

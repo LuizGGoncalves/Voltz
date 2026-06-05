@@ -46,11 +46,11 @@ class ClienteService(
 
         // Enriquecer endereços via ViaCEP
         val enderecoCliente = viaCepService.consultar(request.endereco.cep)
-        enriquecerEndereco(cliente.endereco, enderecoCliente)
+        cliente.endereco.enriquecerCom(enderecoCliente)
 
         cliente.unidadesConsumidoras.forEachIndexed { i, uc ->
             val enderecoUc = viaCepService.consultar(request.unidadesConsumidoras[i].endereco.cep)
-            enriquecerEndereco(uc.endereco, enderecoUc)
+            uc.endereco.enriquecerCom(enderecoUc)
         }
 
         val salvo = finalizarCadastro(cliente)
@@ -79,8 +79,8 @@ class ClienteService(
                 log.info("UC '{}' em MG — publicando evento analise_cliente_mg", uc.nome)
                 eventPublisher.publishEvent(
                     AnaliseClienteMgEvent(
-                        clienteId = salvo.id!!,
-                        unidadeConsumidoraId = uc.id!!
+                        clienteId = requireNotNull(salvo.id),
+                        unidadeConsumidoraId = requireNotNull(uc.id)
                     )
                 )
             }
@@ -92,7 +92,7 @@ class ClienteService(
     @Transactional
     fun atualizar(id: Long, request: ClienteUpdateRequest): Cliente {
         val cliente = clienteRepository.findByIdWithUCs(id)
-            .orElseThrow { ClienteNaoEncontradoException(id) }
+            ?: throw ClienteNaoEncontradoException(id)
         val documento = validarDocumento(request.documento)
 
         if (cliente.documento?.valor != documento.valor) {
@@ -104,7 +104,7 @@ class ClienteService(
 
         val enderecoCliente = viaCepService.consultar(request.endereco.cep)
         cliente.endereco = request.endereco.toModel()
-        enriquecerEndereco(cliente.endereco, enderecoCliente)
+        cliente.endereco.enriquecerCom(enderecoCliente)
 
         val salvo = clienteRepository.save(cliente)
         log.info("Cliente atualizado: id={}, user={}", salvo.id, SecurityUtils.currentUsername())
@@ -113,7 +113,7 @@ class ClienteService(
 
     @Transactional(readOnly = true)
     fun buscarPorId(id: Long): Cliente =
-        clienteRepository.findByIdWithUCs(id).orElseThrow { ClienteNaoEncontradoException(id) }
+        clienteRepository.findByIdWithUCs(id) ?: throw ClienteNaoEncontradoException(id)
 
     @Transactional(readOnly = true)
     fun listar(pageable: Pageable, incluirInativos: Boolean = false): Page<Cliente> =
@@ -127,7 +127,7 @@ class ClienteService(
     @Transactional
     fun corrigirDocumento(id: Long, novoDocumento: String, motivo: String): Cliente {
         val cliente = clienteRepository.findByIdWithUCs(id)
-            .orElseThrow { ClienteNaoEncontradoException(id) }
+            ?: throw ClienteNaoEncontradoException(id)
         val documento = validarDocumento(novoDocumento)
         val docAnterior = cliente.documento?.valor ?: ""
 
@@ -183,10 +183,4 @@ class ClienteService(
         }
     }
 
-    private fun enriquecerEndereco(destino: Endereco, viaCep: Endereco) {
-        destino.logradouro = viaCep.logradouro
-        destino.bairro = viaCep.bairro
-        destino.cidade = viaCep.cidade
-        destino.uf = viaCep.uf
-    }
 }

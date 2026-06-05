@@ -12,7 +12,8 @@ import com.treinamento.clientes.web.mapper.toModel
 import org.slf4j.LoggerFactory
 import org.springframework.scheduling.annotation.Scheduled
 import org.springframework.stereotype.Component
-import org.springframework.transaction.annotation.Transactional
+import org.springframework.transaction.PlatformTransactionManager
+import org.springframework.transaction.support.TransactionTemplate
 import java.time.Duration
 import java.time.Instant
 
@@ -21,8 +22,10 @@ class RetryCadastroJob(
     private val cadastroPendenteRepository: CadastroPendenteRepository,
     private val clienteService: ClienteService,
     private val viaCepService: ViaCepService,
-    private val objectMapper: ObjectMapper
+    private val objectMapper: ObjectMapper,
+    transactionManager: PlatformTransactionManager
 ) {
+    private val txTemplate = TransactionTemplate(transactionManager)
 
     private val log = LoggerFactory.getLogger(javaClass)
 
@@ -46,7 +49,7 @@ class RetryCadastroJob(
 
         pendentes.forEach { pendente ->
             try {
-                processarUm(pendente)
+                txTemplate.executeWithoutResult { processarUm(pendente) }
                 falhasConsecutivas = 0
             } catch (ex: Exception) {
                 falhasNoBatch++
@@ -63,8 +66,7 @@ class RetryCadastroJob(
         }
     }
 
-    @Transactional
-    fun processarUm(pendente: CadastroPendente) {
+    private fun processarUm(pendente: CadastroPendente) {
         // TTL expirado
         if (pendente.createdAt.plus(TTL).isBefore(Instant.now())) {
             pendente.status = "FALHA"
@@ -85,18 +87,10 @@ class RetryCadastroJob(
             val cliente = request.toModel()
 
             // Enriquecer via ViaCEP
-            val endCliente = viaCepService.consultar(request.endereco.cep)
-            cliente.endereco.logradouro = endCliente.logradouro
-            cliente.endereco.bairro = endCliente.bairro
-            cliente.endereco.cidade = endCliente.cidade
-            cliente.endereco.uf = endCliente.uf
+            cliente.endereco.enriquecerCom(viaCepService.consultar(request.endereco.cep))
 
             cliente.unidadesConsumidoras.forEachIndexed { i, uc ->
-                val endUc = viaCepService.consultar(request.unidadesConsumidoras[i].endereco.cep)
-                uc.endereco.logradouro = endUc.logradouro
-                uc.endereco.bairro = endUc.bairro
-                uc.endereco.cidade = endUc.cidade
-                uc.endereco.uf = endUc.uf
+                uc.endereco.enriquecerCom(viaCepService.consultar(request.unidadesConsumidoras[i].endereco.cep))
             }
 
             // Fonte única das regras de UF
@@ -130,7 +124,7 @@ class RetryCadastroJob(
     private fun elegívelParaRetry(pendente: CadastroPendente): Boolean {
         if (pendente.ultimaTentativa == null) return true
         val intervaloMinutos = BACKOFF_INTERVALS.getOrElse(pendente.tentativas) { BACKOFF_INTERVALS.last() }
-        val proximoRetry = pendente.ultimaTentativa!!.plusSeconds(intervaloMinutos * 60)
+        val proximoRetry = requireNotNull(pendente.ultimaTentativa).plusSeconds(intervaloMinutos * 60)
         return Instant.now().isAfter(proximoRetry)
     }
 }
