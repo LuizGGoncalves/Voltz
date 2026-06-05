@@ -45,10 +45,10 @@
 - **Problema:** `.get()` lança `NoSuchElementException` → 500 genérico
 - **Solução aplicada:** `.orElseThrow { UsernameNotFoundException(...) }` — exceção do Spring Security, tratada nativamente como 401 pelo framework. Zero código extra de handler
 
-### C5. RuntimeException genérica no RefreshTokenService
-- **Onde:** `RefreshTokenService.kt:31,34`
-- **Problema:** `RuntimeException("Refresh token inválido")` sem handler → 500 genérico em vez de 401
-- **Fix:** Criar exceções tipadas + handler no GlobalExceptionHandler → 401
+### ~~C5. RuntimeException genérica no RefreshTokenService~~ — RESOLVIDO
+- **Onde:** `RefreshTokenService.kt`
+- **Problema:** `RuntimeException` sem handler → 500 genérico
+- **Solução aplicada:** `UsernameNotFoundException` (Spring Security) — tratado nativamente como 401. Mesmo padrão do C4
 
 ### C6. Sem rate limiting no login (Risco #12 do PLANO)
 - **Onde:** `AuthController.kt` — nenhuma proteção

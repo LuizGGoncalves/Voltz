@@ -3,6 +3,7 @@ package com.treinamento.clientes.service
 import com.treinamento.clientes.domain.model.RefreshToken
 import com.treinamento.clientes.repository.RefreshTokenRepository
 import com.treinamento.clientes.security.JwtProperties
+import org.springframework.security.core.userdetails.UsernameNotFoundException
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
 import java.security.MessageDigest
@@ -28,10 +29,10 @@ class RefreshTokenService(
     @Transactional(readOnly = true)
     fun validar(rawToken: String): RefreshToken {
         val token = refreshTokenRepository.findByTokenHashAndRevogadoFalse(hash(rawToken))
-            .orElseThrow { RuntimeException("Refresh token inválido ou revogado") }
+            .orElseThrow { UsernameNotFoundException("Refresh token inválido ou revogado") }
 
         if (token.expiraEm.isBefore(Instant.now())) {
-            throw RuntimeException("Refresh token expirado")
+            throw UsernameNotFoundException("Refresh token expirado")
         }
 
         return token
