@@ -3,12 +3,16 @@ package com.treinamento.clientes.service
 import com.fasterxml.jackson.databind.ObjectMapper
 import com.treinamento.clientes.domain.model.CadastroPendente
 import com.treinamento.clientes.domain.vo.Documento
+import com.treinamento.clientes.exception.ClienteNaoEncontradoException
 import com.treinamento.clientes.exception.DocumentoDuplicadoException
 import com.treinamento.clientes.exception.InstalacaoDuplicadaException
 import com.treinamento.clientes.repository.CadastroPendenteRepository
 import com.treinamento.clientes.repository.ClienteRepository
 import com.treinamento.clientes.repository.UnidadeConsumidoraRepository
+import com.treinamento.clientes.web.dto.CadastroPendenteResponse
 import com.treinamento.clientes.web.dto.ClienteRequest
+import org.springframework.data.domain.Page
+import org.springframework.data.domain.Pageable
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
 
@@ -24,19 +28,16 @@ class CadastroPendenteService(
     fun enfileirar(request: ClienteRequest): CadastroPendente {
         val docNormalizado = Documento.of(request.documento).valor
 
-        // Dedup documento: checar contra clientes ativos
         if (clienteRepository.existsByDocumentoAndAtivoTrue(docNormalizado)) {
             throw DocumentoDuplicadoException(docNormalizado)
         }
 
-        // Dedup instalação: checar contra UCs ativas (risco #13 PLANO)
         request.unidadesConsumidoras.forEach { ucReq ->
             if (ucRepository.existsByNumeroInstalacaoAndAtivoTrue(ucReq.numeroInstalacao)) {
                 throw InstalacaoDuplicadaException(ucReq.numeroInstalacao)
             }
         }
 
-        // INSERT atômico com ON CONFLICT — resolve race condition (M1)
         val payload = objectMapper.writeValueAsString(request)
         val inserted = cadastroPendenteRepository.insertOnConflictDoNothing(docNormalizado, payload)
 
@@ -46,4 +47,31 @@ class CadastroPendenteService(
 
         return cadastroPendenteRepository.findByDocumentoAndStatus(docNormalizado, "PENDENTE")!!
     }
+
+    @Transactional(readOnly = true)
+    fun listar(pageable: Pageable, status: String?): Page<CadastroPendenteResponse> {
+        val page = if (status != null) {
+            cadastroPendenteRepository.findAllByStatusOrderByCreatedAtDesc(status.uppercase(), pageable)
+        } else {
+            cadastroPendenteRepository.findAllByOrderByCreatedAtDesc(pageable)
+        }
+        return page.map { it.toResponse() }
+    }
+
+    @Transactional(readOnly = true)
+    fun buscarPorId(id: Long): CadastroPendenteResponse {
+        val pendente = cadastroPendenteRepository.findById(id)
+            .orElseThrow { ClienteNaoEncontradoException(id) }
+        return pendente.toResponse()
+    }
+
+    private fun CadastroPendente.toResponse() = CadastroPendenteResponse(
+        id = id!!,
+        documento = documento,
+        status = status,
+        motivo = motivo,
+        tentativas = tentativas,
+        createdAt = createdAt,
+        ultimaTentativa = ultimaTentativa
+    )
 }
