@@ -257,5 +257,11 @@ export class ClienteFormComponent implements OnInit {
     }
   }
 
-  voltar() { this.router.navigate(['/clientes']); }
+  voltar() {
+    if (this.editando && this.clienteId) {
+      this.router.navigate(['/clientes', this.clienteId]);
+    } else {
+      this.router.navigate(['/clientes']);
+    }
+  }
 }
