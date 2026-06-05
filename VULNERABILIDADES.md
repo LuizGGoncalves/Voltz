@@ -86,9 +86,9 @@
 ### ~~A6. Sem handler OptimisticLockingFailureException~~ — RESOLVIDO
 - **Solução:** Handler → 409 "Registro modificado por outro usuário" (risco #10 PLANO)
 
-### A7. ~~Falta `@Version` na UnidadeConsumidora~~ — NÃO APLICÁVEL
-- **Análise:** UC não tem endpoint próprio — sempre editada via cascade do Cliente. O `@Version` do Cliente já protege contra edições concorrentes. Adicionar `@Version` na UC complicaria o cascade (orphanRemoval + SQLDelete precisariam da version) sem ganho real. Se a UC tiver endpoint direto no futuro, reavaliar
-- **Decisão:** manter sem `@Version` na UC; risco #10 coberto pelo Cliente
+### ~~A7. Falta `@Version` na UnidadeConsumidora~~ — RESOLVIDO
+- **Contexto:** UC ganhou endpoints independentes (CRUD separado do Cliente), então precisa de proteção própria contra edições concorrentes
+- **Solução aplicada:** `@Version` na UC + migration V3 + `@SQLDelete` com version na query. Endpoints: POST/PUT/DELETE /clientes/{id}/unidades/{ucId} com @PreAuthorize
 
 ### A8. Dockerfiles/compose de produção — PENDENTE (aguarda infra)
 - **PLANO:** Dockerfiles multi-stage + docker-compose.prod.yml
