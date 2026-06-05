@@ -8,6 +8,7 @@ import { MatIconModule } from '@angular/material/icon';
 import { MatChipsModule } from '@angular/material/chips';
 import { MatSlideToggleModule } from '@angular/material/slide-toggle';
 import { MatSnackBar, MatSnackBarModule } from '@angular/material/snack-bar';
+import { MatTooltipModule } from '@angular/material/tooltip';
 import { FormsModule } from '@angular/forms';
 import { ClienteService } from '../../../core/services/cliente.service';
 import { ClienteResumo } from '../../../core/models/cliente.model';
@@ -15,7 +16,7 @@ import { ClienteResumo } from '../../../core/models/cliente.model';
 @Component({
   selector: 'app-cliente-lista',
   standalone: true,
-  imports: [CommonModule, RouterModule, FormsModule, MatTableModule, MatPaginatorModule, MatButtonModule, MatIconModule, MatChipsModule, MatSlideToggleModule, MatSnackBarModule],
+  imports: [CommonModule, RouterModule, FormsModule, MatTableModule, MatPaginatorModule, MatButtonModule, MatIconModule, MatChipsModule, MatSlideToggleModule, MatSnackBarModule, MatTooltipModule],
   template: `
     <div class="header">
       <h2>Clientes</h2>
@@ -50,7 +51,8 @@ import { ClienteResumo } from '../../../core/models/cliente.model';
       <ng-container matColumnDef="acoes">
         <th mat-header-cell *matHeaderCellDef>Ações</th>
         <td mat-cell *matCellDef="let c">
-          <a mat-icon-button [routerLink]="['/clientes', c.id, 'editar']"><mat-icon>edit</mat-icon></a>
+          <a mat-icon-button [routerLink]="['/clientes', c.id]" matTooltip="Ver detalhe"><mat-icon>visibility</mat-icon></a>
+          <a mat-icon-button [routerLink]="['/clientes', c.id, 'editar']" matTooltip="Editar"><mat-icon>edit</mat-icon></a>
           @if (c.ativo) {
             <button mat-icon-button color="warn" (click)="inativar(c)"><mat-icon>delete</mat-icon></button>
           }

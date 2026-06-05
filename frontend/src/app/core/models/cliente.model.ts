@@ -57,6 +57,12 @@ export interface ClienteRequest {
   unidadesConsumidoras: UnidadeConsumidoraRequest[];
 }
 
+export interface ClienteUpdateRequest {
+  nome: string;
+  documento: string;
+  endereco: EnderecoRequest;
+}
+
 export interface Page<T> {
   content: T[];
   totalElements: number;

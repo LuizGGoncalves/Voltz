@@ -12,7 +12,7 @@ import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { NgxMaskDirective } from 'ngx-mask';
 import { ClienteService } from '../../../core/services/cliente.service';
 import { ViaCepService } from '../../../core/services/viacep.service';
-import { ClienteRequest, CadastroPendenteCreated } from '../../../core/models/cliente.model';
+import { ClienteRequest, ClienteUpdateRequest, CadastroPendenteCreated, UnidadeConsumidoraRequest } from '../../../core/models/cliente.model';
 
 @Component({
   selector: 'app-cliente-form',
@@ -38,7 +38,7 @@ import { ClienteRequest, CadastroPendenteCreated } from '../../../core/models/cl
           <div formGroupName="endereco" class="row">
             <mat-form-field appearance="outline" class="flex-1">
               <mat-label>CEP</mat-label>
-              <input matInput formControlName="cep" mask="00000-000" (blur)="buscarCep('cliente')">
+              <input matInput formControlName="cep" mask="00000-000" (blur)="buscarCep()">
             </mat-form-field>
             <mat-form-field appearance="outline" class="flex-1">
               <mat-label>Número</mat-label>
@@ -67,67 +67,54 @@ import { ClienteRequest, CadastroPendenteCreated } from '../../../core/models/cl
               <input matInput formControlName="uf" readonly>
             </mat-form-field>
           </div>
-        </mat-card-content>
-      </mat-card>
 
-      <mat-card class="uc-card">
-        <mat-card-content>
-          <div class="uc-header">
-            <h3>Unidades Consumidoras</h3>
-            <button mat-stroked-button type="button" (click)="adicionarUC()">
-              <mat-icon>add</mat-icon> Adicionar UC
-            </button>
-          </div>
-          @for (uc of ucsArray.controls; track $index; let i = $index) {
-            <div class="uc-item" [formGroupName]="'unidadesConsumidoras'">
-              <div [formGroupName]="i">
-                <div class="row">
-                  <mat-form-field appearance="outline" class="flex-2">
-                    <mat-label>Nome da UC</mat-label>
-                    <input matInput formControlName="nome">
-                  </mat-form-field>
-                  <mat-form-field appearance="outline" class="flex-1">
-                    <mat-label>Nº Instalação</mat-label>
-                    <input matInput formControlName="numeroInstalacao">
-                  </mat-form-field>
-                  <button mat-icon-button color="warn" type="button" (click)="removerUC(i)">
-                    <mat-icon>close</mat-icon>
-                  </button>
-                </div>
-                <div formGroupName="endereco" class="row">
-                  <mat-form-field appearance="outline" class="flex-1">
-                    <mat-label>CEP</mat-label>
-                    <input matInput formControlName="cep" mask="00000-000" (blur)="buscarCepUC(i)">
-                  </mat-form-field>
-                  <mat-form-field appearance="outline" class="flex-1">
-                    <mat-label>Número</mat-label>
-                    <input matInput formControlName="numero">
-                  </mat-form-field>
-                  <mat-form-field appearance="outline" class="flex-1">
-                    <mat-label>Complemento</mat-label>
-                    <input matInput formControlName="complemento">
-                  </mat-form-field>
-                </div>
-                <div formGroupName="endereco" class="row readonly-fields">
-                  <mat-form-field appearance="outline" class="flex-2">
-                    <mat-label>Logradouro</mat-label>
-                    <input matInput formControlName="logradouro" readonly>
-                  </mat-form-field>
-                  <mat-form-field appearance="outline" class="flex-1">
-                    <mat-label>Bairro</mat-label>
-                    <input matInput formControlName="bairro" readonly>
-                  </mat-form-field>
-                  <mat-form-field appearance="outline" class="flex-1">
-                    <mat-label>Cidade</mat-label>
-                    <input matInput formControlName="cidade" readonly>
-                  </mat-form-field>
-                  <mat-form-field appearance="outline" style="width:80px">
-                    <mat-label>UF</mat-label>
-                    <input matInput formControlName="uf" readonly>
-                  </mat-form-field>
-                </div>
+          @if (!editando) {
+            <h3 style="margin-top:16px">Unidade Consumidora Inicial</h3>
+            <div formGroupName="uc" class="row">
+              <mat-form-field appearance="outline" class="flex-2">
+                <mat-label>Nome da UC</mat-label>
+                <input matInput formControlName="nome">
+              </mat-form-field>
+              <mat-form-field appearance="outline" class="flex-1">
+                <mat-label>Nº Instalação</mat-label>
+                <input matInput formControlName="numeroInstalacao">
+              </mat-form-field>
+            </div>
+            <div formGroupName="uc">
+              <div formGroupName="endereco" class="row">
+                <mat-form-field appearance="outline" class="flex-1">
+                  <mat-label>CEP</mat-label>
+                  <input matInput formControlName="cep" mask="00000-000" (blur)="buscarCepUC()">
+                </mat-form-field>
+                <mat-form-field appearance="outline" class="flex-1">
+                  <mat-label>Número</mat-label>
+                  <input matInput formControlName="numero">
+                </mat-form-field>
+                <mat-form-field appearance="outline" class="flex-1">
+                  <mat-label>Complemento</mat-label>
+                  <input matInput formControlName="complemento">
+                </mat-form-field>
+              </div>
+              <div formGroupName="endereco" class="row readonly-fields">
+                <mat-form-field appearance="outline" class="flex-2">
+                  <mat-label>Logradouro</mat-label>
+                  <input matInput formControlName="logradouro" readonly>
+                </mat-form-field>
+                <mat-form-field appearance="outline" class="flex-1">
+                  <mat-label>Bairro</mat-label>
+                  <input matInput formControlName="bairro" readonly>
+                </mat-form-field>
+                <mat-form-field appearance="outline" class="flex-1">
+                  <mat-label>Cidade</mat-label>
+                  <input matInput formControlName="cidade" readonly>
+                </mat-form-field>
+                <mat-form-field appearance="outline" style="width:80px">
+                  <mat-label>UF</mat-label>
+                  <input matInput formControlName="uf" readonly>
+                </mat-form-field>
               </div>
             </div>
+            <p class="hint">Após criar, gerencie as UCs na tela de detalhe do cliente.</p>
           }
         </mat-card-content>
       </mat-card>
@@ -145,10 +132,8 @@ import { ClienteRequest, CadastroPendenteCreated } from '../../../core/models/cl
     .flex-1 { flex: 1; min-width: 150px; }
     .flex-2 { flex: 2; min-width: 200px; }
     .readonly-fields input { color: #666; }
-    .uc-card { margin-top: 16px; }
-    .uc-header { display: flex; justify-content: space-between; align-items: center; }
-    .uc-item { padding: 16px 0; border-bottom: 1px solid #e0e0e0; }
     .form-actions { display: flex; justify-content: flex-end; gap: 12px; margin-top: 16px; }
+    .hint { color: #888; font-size: 13px; margin-top: 8px; }
   `]
 })
 export class ClienteFormComponent implements OnInit {
@@ -171,26 +156,23 @@ export class ClienteFormComponent implements OnInit {
       nome: ['', Validators.required],
       documento: ['', Validators.required],
       endereco: this.criarEnderecoGroup(),
-      unidadesConsumidoras: this.fb.array([this.criarUCGroup()])
+      uc: this.fb.group({
+        nome: ['', Validators.required],
+        numeroInstalacao: ['', Validators.required],
+        endereco: this.criarEnderecoGroup()
+      })
     });
 
     const id = this.route.snapshot.paramMap.get('id');
     if (id) {
       this.editando = true;
       this.clienteId = +id;
+      this.form.removeControl('uc');
       this.clienteService.buscarPorId(this.clienteId).subscribe(c => {
         this.form.patchValue({ nome: c.nome, documento: c.documento, endereco: c.endereco });
-        this.ucsArray.clear();
-        c.unidadesConsumidoras.forEach(uc => {
-          const g = this.criarUCGroup();
-          g.patchValue({ nome: uc.nome, numeroInstalacao: uc.numeroInstalacao, endereco: uc.endereco });
-          this.ucsArray.push(g);
-        });
       });
     }
   }
-
-  get ucsArray() { return this.form.get('unidadesConsumidoras') as FormArray; }
 
   criarEnderecoGroup() {
     return this.fb.group({
@@ -199,34 +181,19 @@ export class ClienteFormComponent implements OnInit {
     });
   }
 
-  criarUCGroup() {
-    return this.fb.group({
-      nome: ['', Validators.required],
-      numeroInstalacao: ['', Validators.required],
-      endereco: this.criarEnderecoGroup()
-    });
-  }
-
-  adicionarUC() { this.ucsArray.push(this.criarUCGroup()); }
-  removerUC(i: number) { if (this.ucsArray.length > 1) this.ucsArray.removeAt(i); }
-
-  buscarCep(target: string) {
+  buscarCep() {
     const cep = this.form.get('endereco.cep')?.value;
     if (!cep) return;
     this.viaCepService.consultarCep(cep).subscribe(r => {
-      if (r && !r.erro) {
-        this.form.get('endereco')?.patchValue({ logradouro: r.logradouro, bairro: r.bairro, cidade: r.localidade, uf: r.uf });
-      }
+      if (r && !r.erro) this.form.get('endereco')?.patchValue({ logradouro: r.logradouro, bairro: r.bairro, cidade: r.localidade, uf: r.uf });
     });
   }
 
-  buscarCepUC(i: number) {
-    const cep = this.ucsArray.at(i).get('endereco.cep')?.value;
+  buscarCepUC() {
+    const cep = this.form.get('uc.endereco.cep')?.value;
     if (!cep) return;
     this.viaCepService.consultarCep(cep).subscribe(r => {
-      if (r && !r.erro) {
-        this.ucsArray.at(i).get('endereco')?.patchValue({ logradouro: r.logradouro, bairro: r.bairro, cidade: r.localidade, uf: r.uf });
-      }
+      if (r && !r.erro) this.form.get('uc.endereco')?.patchValue({ logradouro: r.logradouro, bairro: r.bairro, cidade: r.localidade, uf: r.uf });
     });
   }
 
@@ -239,36 +206,32 @@ export class ClienteFormComponent implements OnInit {
     if (this.form.invalid) { this.form.markAllAsTouched(); return; }
     this.loading.set(true);
     const val = this.form.value;
-    const request: ClienteRequest = {
-      nome: val.nome,
-      documento: val.documento,
-      endereco: { cep: val.endereco.cep, numero: val.endereco.numero, complemento: val.endereco.complemento },
-      unidadesConsumidoras: val.unidadesConsumidoras.map((uc: any) => ({
-        nome: uc.nome, numeroInstalacao: uc.numeroInstalacao,
-        endereco: { cep: uc.endereco.cep, numero: uc.endereco.numero, complemento: uc.endereco.complemento }
-      }))
-    };
 
-    const obs = this.editando
-      ? this.clienteService.atualizar(this.clienteId!, request)
-      : this.clienteService.criar(request);
-
-    obs.subscribe({
-      next: (res: any) => {
-        this.loading.set(false);
-        if (res.cadastroPendenteId) {
-          this.snackBar.open(`Cadastro em processamento (ID: ${res.cadastroPendenteId})`, 'OK', { duration: 5000 });
-        } else {
-          this.snackBar.open(this.editando ? 'Cliente atualizado!' : 'Cliente criado!', 'OK', { duration: 3000 });
-        }
-        this.router.navigate(['/clientes']);
-      },
-      error: (err) => {
-        this.loading.set(false);
-        const msg = err.error?.detail || err.error?.errors?.[0]?.message || 'Erro ao salvar';
-        this.snackBar.open(msg, 'OK', { duration: 5000 });
-      }
-    });
+    if (this.editando) {
+      const request: ClienteUpdateRequest = {
+        nome: val.nome, documento: val.documento,
+        endereco: { cep: val.endereco.cep, numero: val.endereco.numero, complemento: val.endereco.complemento }
+      };
+      this.clienteService.atualizar(this.clienteId!, request).subscribe({
+        next: () => { this.loading.set(false); this.snackBar.open('Cliente atualizado!', 'OK', { duration: 3000 }); this.router.navigate(['/clientes', this.clienteId]); },
+        error: (err) => { this.loading.set(false); this.snackBar.open(err.error?.detail || 'Erro ao salvar', 'OK', { duration: 5000 }); }
+      });
+    } else {
+      const request: ClienteRequest = {
+        nome: val.nome, documento: val.documento,
+        endereco: { cep: val.endereco.cep, numero: val.endereco.numero, complemento: val.endereco.complemento },
+        unidadesConsumidoras: [{ nome: val.uc.nome, numeroInstalacao: val.uc.numeroInstalacao, endereco: { cep: val.uc.endereco.cep, numero: val.uc.endereco.numero, complemento: val.uc.endereco.complemento } }]
+      };
+      this.clienteService.criar(request).subscribe({
+        next: (res: any) => {
+          this.loading.set(false);
+          if (res.cadastroPendenteId) { this.snackBar.open(`Cadastro em processamento (ID: ${res.cadastroPendenteId})`, 'OK', { duration: 5000 }); }
+          else { this.snackBar.open('Cliente criado!', 'OK', { duration: 3000 }); }
+          this.router.navigate(['/clientes']);
+        },
+        error: (err) => { this.loading.set(false); this.snackBar.open(err.error?.detail || err.error?.errors?.[0]?.message || 'Erro ao salvar', 'OK', { duration: 5000 }); }
+      });
+    }
   }
 
   voltar() { this.router.navigate(['/clientes']); }
