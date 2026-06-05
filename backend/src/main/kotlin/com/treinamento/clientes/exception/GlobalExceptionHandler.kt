@@ -3,6 +3,7 @@ package com.treinamento.clientes.exception
 import com.treinamento.clientes.integration.viacep.CepInvalidoException
 import com.treinamento.clientes.integration.viacep.ViaCepIndisponivelException
 import org.springframework.dao.DataIntegrityViolationException
+import org.springframework.dao.OptimisticLockingFailureException
 import org.springframework.http.HttpStatus
 import org.springframework.http.ProblemDetail
 import org.springframework.web.bind.MethodArgumentNotValidException
@@ -55,6 +56,10 @@ class GlobalExceptionHandler {
     @ExceptionHandler(RateLimitExceededException::class)
     fun handleRateLimit(ex: RateLimitExceededException): ProblemDetail =
         ProblemDetail.forStatusAndDetail(HttpStatus.TOO_MANY_REQUESTS, ex.message!!)
+
+    @ExceptionHandler(OptimisticLockingFailureException::class)
+    fun handleOptimisticLocking(ex: OptimisticLockingFailureException): ProblemDetail =
+        ProblemDetail.forStatusAndDetail(HttpStatus.CONFLICT, "Registro foi modificado por outro usuário. Recarregue e tente novamente.")
 
     @ExceptionHandler(DataIntegrityViolationException::class)
     fun handleDataIntegrity(ex: DataIntegrityViolationException): ProblemDetail =

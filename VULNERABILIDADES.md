@@ -68,34 +68,23 @@
 
 ## ALTO — Corrigir Antes de Feature Complete
 
-### A1. Falta `@PreAuthorize` nos métodos do ClienteController (D29)
-- **Onde:** `ClienteController.kt`
-- **PLANO:** POST/PUT = USER, DELETE/PATCH = ADMIN
-- **Atual:** Sem @PreAuthorize; só SecurityConfig protege por rota
-- **Fix:** Adicionar `@PreAuthorize("hasRole('USER')")` no POST/PUT, `hasRole('ADMIN')` no DELETE/PATCH
+### ~~A1. Falta `@PreAuthorize` no ClienteController (D29)~~ — RESOLVIDO
+- **Solução:** POST/PUT `hasRole('USER')`, PATCH/DELETE `hasRole('ADMIN')`. Defesa em profundidade
 
-### A2. Sem AsyncUncaughtExceptionHandler (Risco #11 do PLANO)
-- **Onde:** `AnaliseClienteMgListener.kt` — sem try/catch; exceções engolidas
-- **Fix:** Configurar `AsyncUncaughtExceptionHandler` bean + try/catch no listener
+### ~~A2. Sem AsyncUncaughtExceptionHandler (Risco #11)~~ — RESOLVIDO
+- **Solução:** try/catch no listener MG + `AsyncConfig` global como rede de segurança
 
-### A3. Falta validação de JWT issuer/audience
-- **Onde:** `JwtService.kt` — token sem `iss`/`aud`
-- **Problema:** Token de outro sistema com mesma chave seria aceito
-- **Fix:** Adicionar `.issuer("gestao-clientes")` na emissão e validação
+### ~~A3. Falta validação de JWT issuer~~ — RESOLVIDO
+- **Solução:** `issuer("gestao-clientes-api")` na emissão + `JwtIssuerValidator` no decoder
 
-### A4. Sem logging de eventos de segurança
-- **Onde:** `AuthController.kt`, `RefreshTokenService.kt`
-- **Problema:** Login (sucesso/falha), logout, refresh — nenhum registrado
-- **Fix:** `log.info/warn` em todos os fluxos de auth
+### ~~A4. Sem logging de auth~~ — RESOLVIDO
+- **Solução:** log.info em login sucesso/refresh/logout, log.warn em falha/rate limit (OWASP A09)
 
-### A5. CORS hardcoded para localhost
-- **Onde:** `SecurityConfig.kt:88`
-- **Fix:** Parametrizar via env var `CORS_ALLOWED_ORIGINS`
+### ~~A5. CORS hardcoded para localhost~~ — RESOLVIDO
+- **Solução:** `cors.allowed-origins` em `application.yml` (vazio por padrão = nenhum), valor de dev em `application-dev.yml`. Controlado por profile
 
-### A6. Sem handler para OptimisticLockingFailureException (Risco #10 do PLANO)
-- **Onde:** `GlobalExceptionHandler.kt`
-- **Problema:** `@Version` no Cliente existe mas exception vira 500
-- **Fix:** Handler → 409 "Cliente modificado por outro usuário"
+### ~~A6. Sem handler OptimisticLockingFailureException~~ — RESOLVIDO
+- **Solução:** Handler → 409 "Registro modificado por outro usuário" (risco #10 PLANO)
 
 ### A7. Falta `@Version` na UnidadeConsumidora
 - **Onde:** `UnidadeConsumidora.kt`

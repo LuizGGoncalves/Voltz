@@ -30,7 +30,9 @@ class SecurityConfig(
     private val jwtAuthenticationConverter: JwtAuthenticationConverter,
     private val objectMapper: ObjectMapper,
     @Value("\${springdoc.swagger-ui.public-access:false}")
-    private val swaggerPublico: Boolean
+    private val swaggerPublico: Boolean,
+    @Value("\${cors.allowed-origins:}")
+    private val corsAllowedOrigins: String
 ) {
 
     @Bean
@@ -98,7 +100,7 @@ class SecurityConfig(
     @Bean
     fun corsConfigurationSource(): CorsConfigurationSource {
         val config = CorsConfiguration()
-        config.allowedOrigins = listOf("http://localhost:4200")
+        config.allowedOrigins = corsAllowedOrigins.split(",").map { it.trim() }.filter { it.isNotBlank() }
         config.allowedMethods = listOf("GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS")
         config.allowedHeaders = listOf("*")
         config.allowCredentials = true
