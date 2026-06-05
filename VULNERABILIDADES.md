@@ -40,10 +40,10 @@
   4. **Removido boolean solto**: `SPRINGDOC_PUBLIC_ACCESS` env var eliminada; swagger controlado pelo profile
 - **JWT_SECRET** obrigatório via `.env` (sem default no yml); `.env.example` tem valor dev-ready
 
-### C4. `.get()` unsafe no AuthController
-- **Onde:** `AuthController.kt:40,64`
-- **Problema:** `usuarioRepository.findByUsername(...).get()` lança `NoSuchElementException` → 500 genérico se usuário deletado entre login e refresh
-- **Fix:** Usar `.orElseThrow { ... }` com exceção semântica
+### ~~C4. `.get()` unsafe no AuthController~~ — RESOLVIDO
+- **Onde:** `AuthController.kt`
+- **Problema:** `.get()` lança `NoSuchElementException` → 500 genérico
+- **Solução aplicada:** `.orElseThrow { UsernameNotFoundException(...) }` — exceção do Spring Security, tratada nativamente como 401 pelo framework. Zero código extra de handler
 
 ### C5. RuntimeException genérica no RefreshTokenService
 - **Onde:** `RefreshTokenService.kt:31,34`

@@ -15,6 +15,8 @@ import org.springframework.http.ResponseEntity
 import org.springframework.security.authentication.AuthenticationManager
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken
 import org.springframework.security.core.Authentication
+import org.springframework.security.core.authority.SimpleGrantedAuthority
+import org.springframework.security.core.userdetails.UsernameNotFoundException
 import org.springframework.web.bind.annotation.*
 
 @RestController
@@ -39,7 +41,8 @@ class AuthController(
         val accessToken = jwtService.gerarAccessToken(authentication.name, authentication.authorities)
         val rawRefreshToken = jwtService.gerarRefreshToken()
 
-        val usuario = usuarioRepository.findByUsername(authentication.name).get()
+        val usuario = usuarioRepository.findByUsername(authentication.name)
+            .orElseThrow { UsernameNotFoundException("Usuário não encontrado: ${authentication.name}") }
         refreshTokenService.criar(usuario.id!!, rawRefreshToken)
 
         val cookie = buildRefreshCookie(rawRefreshToken, jwtService.getRefreshExpirationMs() / 1000, httpRequest.isSecure)
@@ -64,14 +67,13 @@ class AuthController(
         }
 
         val token = refreshTokenService.validar(refreshToken)
-        val usuario = usuarioRepository.findById(token.usuarioId).get()
+        val usuario = usuarioRepository.findById(token.usuarioId)
+            .orElseThrow { UsernameNotFoundException("Usuário não encontrado: id=${token.usuarioId}") }
 
         // Rotacionar: revogar o antigo e emitir novo
         refreshTokenService.revogar(refreshToken)
 
-        val authorities = usuario.roles.map {
-            org.springframework.security.core.authority.SimpleGrantedAuthority("ROLE_${it.nome}")
-        }
+        val authorities = usuario.roles.map { SimpleGrantedAuthority("ROLE_${it.nome}") }
         val accessToken = jwtService.gerarAccessToken(usuario.username, authorities)
         val newRawRefreshToken = jwtService.gerarRefreshToken()
         refreshTokenService.criar(usuario.id!!, newRawRefreshToken)
