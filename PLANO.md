@@ -745,7 +745,7 @@ Respostas de erro: **RFC 7807 `ProblemDetail`** (D18) — `{ type, title, status
 - [ ] Migration inicial Flyway (schema clientes + UCs)
 - [ ] `Makefile`/scripts `.ps1` com atalhos dos comandos compose
 - [ ] Configurar CORS (frontend container → backend container)
-- [ ] **Reverse proxy de dev** (proxy do `ng serve` ou nginx) para front+back na **mesma origem** → cookie `httpOnly` do refresh funciona (mitiga risco #5)
+- [x] **Proxy de dev** (`proxy.conf.json` do Angular CLI) para front+back na **mesma origem** → cookie `httpOnly` do refresh funciona (mitiga risco #5). Nginx removido — solução nativa do Angular, menos complexidade
 - [ ] Habilitar `@EnableJpaAuditing`, `@EnableScheduling`, `@EnableAsync`, `@EnableMethodSecurity`
 - [ ] Validar que `docker compose up` sobe os 3 serviços e o backend conecta no Postgres
 
@@ -818,7 +818,7 @@ Respostas de erro: **RFC 7807 `ProblemDetail`** (D18) — `{ type, title, status
 | 2 | 🔴 | Fila: UX "aceita e depois rejeita" | Validar tudo sem-ViaCEP no submit; front bloqueia UF; só UF-desconhecida adia; badge contextualiza (seção 2.7) |
 | 3 | 🔴 | Fila: regra de UF duplicada em 2 caminhos | `finalizarCadastro()` como **fonte única** chamada pelo síncrono e pelo job (seção 2.7) |
 | 4 | 🟡 | Volume de features (todas **obrigatórias** — previstas para o bom funcionamento, **não** são scope creep) | Mitigação = **ordem de prioridade** documentada (ver seção 8.2): construir a fundação antes das camadas dependentes. Nada é cortado |
-| 5 | 🔴 | Refresh em cookie `httpOnly` cross-origin no dev (4200×8080) | Servir front+back na **mesma origem** via reverse proxy (nginx/proxy do `ng serve`) no dev → cookie same-site |
+| 5 | 🔴 | Refresh em cookie `httpOnly` cross-origin no dev (4200×8080) | **Resolvido:** `proxy.conf.json` do Angular CLI proxia `/api` → backend. Mesma origem, sem nginx extra. Solução padrão documentada pelo Angular CLI |
 | 6 | 🟡 | Kotlin + JPA: classes `final`/sem no-arg quebram o Hibernate | Configurar `kotlin-allopen` + `kotlin-noarg` (preset `jpa`) no `pom.xml` (Fase 0) |
 | 7 | 🟡 | `data class` em entidade JPA → loop/`LazyInit` em `equals/hashCode/toString` | Entidades = classes normais; **`data class` só em DTOs** |
 | 8 | 🟡 | Índice único parcial não é expressável via `@Table` | Criar via **Flyway** (SQL); Hibernate `validate` não checa o predicado (sem conflito) |
@@ -862,7 +862,7 @@ Sprints alinhados à priorização (8.2) e às dependências. **Testes e lint ac
 
 ### Sprint 0 — Fundação & Infra (P0)
 - **Objetivo:** ambiente 100% Docker de pé.
-- **Entregáveis:** Docker Desktop; monorepo (`/backend`,`/frontend`); scaffold Kotlin+Spring (plugins `allopen`/`noarg`) e Angular standalone; `docker-compose.yml` (db+back+front) com hot reload; **reverse proxy de dev** (mesma origem p/ cookie); `application.yml` (Postgres/Flyway); `V1__init.sql`; CORS; `@Enable*`; `.gitattributes`/`.env.example`.
+- **Entregáveis:** Docker Desktop; monorepo (`/backend`,`/frontend`); scaffold Kotlin+Spring (plugins `allopen`/`noarg`) e Angular standalone; `docker-compose.yml` (db+back+front) com hot reload; **proxy de dev** (`proxy.conf.json` do Angular CLI — mesma origem p/ cookie, sem nginx); `application.yml` (Postgres/Flyway); `V1__init.sql`; CORS; `@Enable*`; `.gitattributes`/`.env.example`.
 - **DoD:** `docker compose up` sobe os 3 serviços; backend conecta no Postgres; front serve; Flyway aplica V1.
 - **Riscos endereçados:** #5 (cookie/proxy), #6 (Kotlin+JPA), #14 (segredos `.env`).
 

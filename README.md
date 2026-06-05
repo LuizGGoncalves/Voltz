@@ -84,6 +84,7 @@ Detalhes de config, dependências e esqueletos: **[`PLANO.md` › Apêndice C](P
                                   └  evento interno MG → lista de análise
 ```
 - **Monorepo:** backend e frontend no mesmo repositório, em pastas separadas (`/backend`, `/frontend`).
+- **Proxy de dev:** o Angular CLI proxia `/api/*` para o backend via `proxy.conf.json` — sem nginx; mesma origem para cookies `httpOnly`.
 - Backend em **camadas**; regras de UF concentradas num único ponto (`finalizarCadastro`).
 - Detalhe técnico completo em **[`PLANO.md`](PLANO.md)**.
 
@@ -163,6 +164,8 @@ O projeto é pequeno: não há motivo para espalhá-lo em vários repositórios.
 | 2026-06-04 | D21 (ViaCEP fora do ar) | De "degradar confiando na UF do cliente" → **"fila persistente + retry"** | Não perder o cadastro e nunca confiar no cliente para a UF; vira feature de destaque |
 | 2026-06-04 | D18 (erros) | Confirmado **RFC 7807 (ProblemDetail)** em vez de formato custom | Usar o padrão nativo do Spring, interoperável |
 | 2026-06-04 | Risco "volume de features" | Reclassificado de 🔴 (cortar) → 🟡 (**priorizar**) | Todas as features são obrigatórias; mitigação é ordem de execução, nada é cortado |
+| 2026-06-05 | Proxy de dev | De **nginx reverse proxy** → **`proxy.conf.json` do Angular CLI** | Nginx era overengineering para dev: container extra, config manual de rotas, manutenção. O proxy do Angular CLI é a solução padrão documentada, zero containers extras, mesma garantia de same-origin para cookie httpOnly |
+| 2026-06-05 | Swagger (C1) | De **público** → **controlado por env var** (`SPRINGDOC_PUBLIC_ACCESS`, default `false`) | Velocidade no dev local (público) com segurança em produção (protegido por padrão) |
 
 *(novas entradas vão sendo adicionadas conforme o projeto evolui)*
 

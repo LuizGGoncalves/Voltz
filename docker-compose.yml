@@ -45,18 +45,11 @@ services:
       - ./frontend/angular.json:/app/angular.json
       - ./frontend/tsconfig.json:/app/tsconfig.json
       - ./frontend/tsconfig.app.json:/app/tsconfig.app.json
-    expose:
-      - "4200"
-
-  nginx:
-    image: nginx:alpine
+      - ./frontend/proxy.conf.json:/app/proxy.conf.json
     ports:
-      - "4200:80"
-    volumes:
-      - ./nginx/nginx.dev.conf:/etc/nginx/conf.d/default.conf:ro
+      - "${PORT_FRONTEND:-4200}:4200"
     depends_on:
       - backend
-      - frontend
 
 volumes:
   pgdata:
