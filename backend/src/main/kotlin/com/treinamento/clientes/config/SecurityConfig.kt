@@ -2,6 +2,7 @@ package com.treinamento.clientes.config
 
 import com.fasterxml.jackson.databind.ObjectMapper
 import com.treinamento.clientes.security.JwtAuthenticationConverter
+import com.treinamento.clientes.security.JwtService
 import org.springframework.beans.factory.annotation.Value
 import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration
@@ -76,8 +77,16 @@ class SecurityConfig(
             .build()
 
     @Bean
-    fun jwtDecoder(jwtSecretKey: SecretKeySpec): JwtDecoder =
-        NimbusJwtDecoder.withSecretKey(jwtSecretKey).macAlgorithm(MacAlgorithm.HS256).build()
+    fun jwtDecoder(jwtSecretKey: SecretKeySpec): JwtDecoder {
+        val decoder = NimbusJwtDecoder.withSecretKey(jwtSecretKey).macAlgorithm(MacAlgorithm.HS256).build()
+        decoder.setJwtValidator(
+            org.springframework.security.oauth2.core.DelegatingOAuth2TokenValidator(
+                org.springframework.security.oauth2.jwt.JwtTimestampValidator(),
+                org.springframework.security.oauth2.jwt.JwtIssuerValidator(JwtService.ISSUER)
+            )
+        )
+        return decoder
+    }
 
     @Bean
     fun passwordEncoder(): PasswordEncoder = BCryptPasswordEncoder()

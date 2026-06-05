@@ -19,6 +19,10 @@ class JwtService(
 
     private val signer by lazy { MACSigner(jwtSecretKey) }
 
+    companion object {
+        const val ISSUER = "gestao-clientes-api"
+    }
+
     fun gerarAccessToken(username: String, authorities: Collection<GrantedAuthority>): String {
         val now = Instant.now()
         val expiration = now.plusMillis(jwtProperties.accessExpirationMs)
@@ -26,6 +30,7 @@ class JwtService(
 
         val claims = JWTClaimsSet.Builder()
             .subject(username)
+            .issuer(ISSUER)
             .issueTime(Date.from(now))
             .expirationTime(Date.from(expiration))
             .claim("roles", roles)
