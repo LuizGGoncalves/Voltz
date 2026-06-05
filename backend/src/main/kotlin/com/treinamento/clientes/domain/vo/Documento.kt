@@ -2,6 +2,8 @@ package com.treinamento.clientes.domain.vo
 
 enum class TipoDocumento { CPF, CNPJ }
 
+// Classe normal (não @JvmInline value class) — incompatível com JPA AttributeConverter.
+// Risco #9 PLANO avaliado e descartado: value class + JPA causa atritos no Hibernate.
 class Documento private constructor(val valor: String) {
 
     val tipo: TipoDocumento

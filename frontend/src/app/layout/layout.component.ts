@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnDestroy, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterModule } from '@angular/router';
 import { MatToolbarModule } from '@angular/material/toolbar';
@@ -62,12 +62,18 @@ import { ViaCepBadgeComponent } from '../shared/components/viacep-badge/viacep-b
     .active { background: rgba(0,0,0,0.04); }
   `]
 })
-export class LayoutComponent implements OnInit {
+export class LayoutComponent implements OnInit, OnDestroy {
+  private intervalId?: ReturnType<typeof setInterval>;
+
   constructor(public authService: AuthService, private viaCepService: ViaCepService) {}
 
   ngOnInit() {
     this.viaCepService.carregarStatus();
-    setInterval(() => this.viaCepService.carregarStatus(), 30000);
+    this.intervalId = setInterval(() => this.viaCepService.carregarStatus(), 30000);
+  }
+
+  ngOnDestroy() {
+    if (this.intervalId) clearInterval(this.intervalId);
   }
 
   onLogout() {

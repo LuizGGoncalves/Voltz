@@ -120,13 +120,26 @@
 
 ## BAIXO — Melhorias Recomendadas
 
-### B1. Sem validação min/max nos tempos de expiração do JWT
-### B2. Health endpoint expõe componentes sem autenticação
-### B3. `CadastroPendenteResponse` pode expor payload JSON bruto (data leak)
-### B4. PLANO sugere tentar `@JvmInline value class` no Documento (risco #9) — atual é correto, falta comentário
-### B5. Frontend: `setInterval(30000)` para ViaCEP status sem cleanup (memory leak no Angular)
-### B6. Frontend: AuthGuard não tenta refresh antes de redirecionar ao login
-### B7. Falta `docker-compose.prod.yml` e nginx prod com HTTPS/HSTS
+### ~~B1. Sem validação min/max nos tempos de expiração do JWT~~ — RESOLVIDO
+- **Solução:** `@Min`/`@Max` + `@Validated` no JwtProperties. Access: 1min–1h. Refresh: 1h–30d
+
+### ~~B2. Health endpoint expõe componentes~~ — ACEITO
+- **Decisão:** manter público. Padrão para monitoramento (uptime checks, load balancer). Detalhes de componentes só com auth (`show-components: when-authorized`)
+
+### ~~B3. Payload JSON no CadastroPendenteResponse~~ — JÁ OK
+- **Status:** DTO já não expõe o campo payload. Sem mudança necessária
+
+### ~~B4. Comentário no Documento VO~~ — RESOLVIDO
+- **Solução:** comentário explicando por que não usar `@JvmInline value class` (risco #9 PLANO)
+
+### ~~B5. setInterval sem cleanup~~ — RESOLVIDO
+- **Solução:** `ngOnDestroy` com `clearInterval`. Sem memory leak
+
+### ~~B6. AuthGuard sem refresh~~ — RESOLVIDO
+- **Solução:** guard tenta `authService.refresh()` antes de redirecionar ao login. Se o cookie httpOnly ainda for válido, renova o token silenciosamente. Melhor UX: page reload não força re-login
+
+### ~~B7. Falta docker-compose.prod.yml~~ — REMOVIDO
+- **Contexto:** nginx removido do projeto (substituído por proxy Angular CLI). Produção será definida com infra AWS. Igual ao A8
 
 ---
 
