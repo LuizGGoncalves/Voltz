@@ -33,5 +33,8 @@ class CadastroPendente(
     var createdAt: Instant = Instant.now(),
 
     @Column(name = "ultima_tentativa")
-    var ultimaTentativa: Instant? = null
+    var ultimaTentativa: Instant? = null,
+
+    @Column(name = "cliente_id")
+    var clienteId: Long? = null
 )

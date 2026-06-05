@@ -94,10 +94,11 @@ class RetryCadastroJob(
             }
 
             // Fonte única das regras de UF
-            clienteService.finalizarCadastro(cliente)
+            val salvo = clienteService.finalizarCadastro(cliente)
 
             pendente.status = "PROCESSADO"
             pendente.motivo = null
+            pendente.clienteId = salvo.id
             log.info("Pendente {} processado com sucesso → Cliente criado", pendente.id)
 
         } catch (ex: ViaCepIndisponivelException) {

@@ -74,6 +74,7 @@ class CadastroPendenteService(
         motivo = motivo,
         tentativas = tentativas,
         createdAt = createdAt,
-        ultimaTentativa = ultimaTentativa
+        ultimaTentativa = ultimaTentativa,
+        clienteId = clienteId
     )
 }

@@ -79,6 +79,7 @@ export interface CadastroPendente {
   tentativas: number;
   createdAt: string;
   ultimaTentativa?: string;
+  clienteId?: number;
 }
 
 export interface CadastroPendenteCreated {

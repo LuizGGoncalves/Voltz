@@ -9,7 +9,8 @@ data class CadastroPendenteResponse(
     val motivo: String?,
     val tentativas: Int,
     val createdAt: Instant,
-    val ultimaTentativa: Instant?
+    val ultimaTentativa: Instant?,
+    val clienteId: Long?
 )
 
 data class CadastroPendenteCreatedResponse(
