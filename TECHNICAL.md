@@ -104,6 +104,7 @@ UNIQUE(documento) WHERE status = 'PENDENTE'    -- cadastro_pendente
 | V3 | Adicionar `version` na unidade_consumidora |
 | V4 | Tabela `auditoria_documento` |
 | V5 | Adicionar `created_at`/`updated_at` na unidade_consumidora |
+| V6 | Adicionar `cliente_id` na cadastro_pendente (link PROCESSADO → Cliente) |
 
 ---
 
@@ -527,17 +528,55 @@ Classe `DemoSeeder` (`config/DemoSeeder.kt`) — `ApplicationRunner` condicional
 
 | Entidade | Qtd | Detalhe |
 |----------|-----|---------|
-| Clientes | 10 | 9 ativos + 1 inativo (SP). CPFs e CNPJs reais (válidos em estrutura). Cidades: BH, RJ, SP, Salvador, Brasília, Fortaleza |
-| UCs | 13 | Distribuídas entre clientes. 5 em MG (geram análises), restante em RJ, BA, DF, CE |
-| Pendentes | 5 | 1 PENDENTE, 2 REJEITADO (PR e SP), 1 PROCESSADO, 1 FALHA (TTL) |
-| Análises MG | 5 | Todas PENDENTE_ANALISE, vinculadas às UCs em MG |
+| Clientes ativos | 32 | CPFs e CNPJs variados. Cidades: BH, RJ, SP, Salvador, Brasília, Fortaleza, Belém, Recife, Contagem, Betim, Niterói |
+| Clientes inativos | 10 | Para testar filtro "Inativos" e paginação |
+| UCs | 19 | 10 em MG (geram análises), 9 em RJ/BA/DF/CE |
+| Pendentes | 32 | 8 PENDENTE, 7 PROCESSADO (com clienteId), 10 REJEITADO (SP/RS/PR), 7 FALHA |
+| Análises MG | 10 | Todas PENDENTE_ANALISE, vinculadas às UCs em MG |
 
 ### O que cada tela mostra com o seeder
 
 | Tela | O que aparece |
 |------|---------------|
-| Lista de Clientes | 9 clientes ativos com avatares, busca funcional, toggle mostra o inativo |
+| Lista de Clientes (Ativos) | 32 clientes com avatares, busca, paginação (2 páginas) |
+| Lista de Clientes (Inativos) | 10 clientes inativos |
+| Lista de Clientes (Todos) | 42 clientes, 3 páginas |
 | Detalhe | Clientes com 1-3 UCs em cards, endereços completos |
-| Novo Cliente | Formulário vazio pronto para criar |
-| Pendentes | 5 registros nos 4 status possíveis (todos os filtros funcionam) |
-| Análises MG | 5 registros com links para os clientes |
+| Novo Cliente | Formulário com validação CPF/CNPJ |
+| Pendentes | 32 registros, paginação (2 páginas), todos os filtros funcionam |
+| Pendentes (PROCESSADO) | Link clicável "Cliente #X" navega para o detalhe |
+| Análises MG | 10 registros com links para os clientes |
+
+---
+
+## 11. Decisões técnicas — motivações
+
+### Por que Kotlin e não Java?
+Kotlin é mais conciso, tem null safety nativa (`T?`, `requireNotNull`), data classes para DTOs imutáveis, extension functions para mappers sem herança, e interoperabilidade total com Spring Boot. O enunciado permite "Java ou Kotlin".
+
+### Por que classes normais para entidades (não data class)?
+JPA exige identidade por referência (`equals`/`hashCode` pelo ID), proxies do Hibernate para lazy loading, e estado mutável para dirty checking. Data classes geram `equals`/`hashCode` por **todos os campos**, o que quebra collections (`HashSet`), proxies, e causa bugs sutis em cascade.
+
+### Por que Flyway + validate (não auto-ddl)?
+`ddl-auto: create` ou `update` é perigoso em produção — pode apagar dados ou gerar schema inconsistente. Flyway garante schema versionado no Git, revisável em code review, imutável após aplicado. Hibernate em `validate` apenas confere que o schema bate com as entidades — se divergir, a aplicação falha no startup (fail fast).
+
+### Por que Value Object para Documento?
+Encapsular num único lugar: validação com dígitos verificadores (CPF e CNPJ), normalização (remove pontuação, armazena só dígitos), derivação de tipo (11 dígitos = CPF, 14 = CNPJ), e conversão JPA (`DocumentoConverter`). O VO é reutilizado pela entidade, pelo validator da borda (`@Documento`), e pelo seeder.
+
+### Por que OAuth2 Resource Server (não filtro JWT manual)?
+Um `OncePerRequestFilter` manual é frágil — precisa parsear o header, decodificar o token, validar signature, issuer, expiration, e construir o `Authentication`. O Spring OAuth2 Resource Server faz tudo isso com uma linha de configuração: `http.oauth2ResourceServer { it.jwt {} }`. Menos código, menos bugs, atualizações de segurança automáticas.
+
+### Por que HMAC-SHA256 no refresh token?
+SHA-256 puro é determinístico — dado o mesmo input, sempre gera o mesmo hash. Se o banco for comprometido, um atacante pode usar rainbow tables para reverter os hashes. HMAC-SHA256 usa um secret (a chave JWT) como parte do cálculo — sem o secret, é impossível gerar ou verificar hashes. Custo computacional negligível.
+
+### Por que TransactionTemplate no retry job?
+No Spring, `@Transactional` em método privado ou chamado pelo mesmo bean (self-invocation) **não funciona** — o proxy AOP não intercepta. O `RetryCadastroJob.processarPendentes()` chama `processarUm()` no mesmo bean. `TransactionTemplate` garante transação real por item, independente do proxy. Se um item falha, os outros não são afetados.
+
+### Por que `Endereco.enriquecerCom()` no model?
+A lógica de copiar `logradouro`, `bairro`, `cidade`, `uf` do retorno do ViaCEP para o endereço da entidade existia em 3 lugares: `ClienteService`, `UnidadeConsumidoraService`, e `RetryCadastroJob`. Violar DRY dessa forma causa bugs quando um lugar é atualizado e os outros não. Centralizar no `@Embeddable` mantém o domínio rico e elimina duplicação.
+
+### Por que CSS custom properties (não SCSS variables)?
+SCSS variables são compiladas — o valor é fixo no CSS final. CSS custom properties (`var(--token)`) são dinâmicas no runtime — trocar o valor de `--bg` em `[data-theme="dark"]` automaticamente propaga para todos os componentes. Isso permite tema claro/escuro com zero JavaScript de re-render.
+
+### Por que sidebar sempre escura?
+Padrão de UI consolidado em ferramentas profissionais (GitHub, Linear, Figma, Notion). A sidebar escura cria contraste natural com o conteúdo claro, facilita a navegação visual, e não muda com o tema — garantindo consistência. O indicador de rota ativa usa barra lateral menta, criando hierarquia visual clara.
