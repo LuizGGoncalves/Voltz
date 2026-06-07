@@ -81,9 +81,9 @@ class ClienteApiIntegrationTest : AbstractIntegrationTest() {
     }
 
     @Test
-    fun `ultimos 20 retorna 200`() {
+    fun `listar com ordenacao por data retorna 200`() {
         val entity = HttpEntity<Void>(authHeaders())
-        val response = restTemplate.exchange("/api/v1/clientes/ultimos", HttpMethod.GET, entity, Map::class.java)
+        val response = restTemplate.exchange("/api/v1/clientes?sort=createdAt,desc&size=20", HttpMethod.GET, entity, Map::class.java)
         assert(response.statusCode == HttpStatus.OK)
     }
 
