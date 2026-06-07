@@ -1,21 +1,21 @@
 {
   "/api": {
-    "target": "http://backend:8080",
+    "target": "http://backend:8082",
     "secure": false,
     "changeOrigin": true
   },
   "/actuator": {
-    "target": "http://backend:8080",
+    "target": "http://backend:8082",
     "secure": false,
     "changeOrigin": true
   },
   "/swagger-ui": {
-    "target": "http://backend:8080",
+    "target": "http://backend:8082",
     "secure": false,
     "changeOrigin": true
   },
   "/v3/api-docs": {
-    "target": "http://backend:8080",
+    "target": "http://backend:8082",
     "secure": false,
     "changeOrigin": true
   }

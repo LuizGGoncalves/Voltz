@@ -124,15 +124,15 @@ cp .env.example .env
 docker compose up -d --build
 
 # 3. Acessar
-open http://localhost:4200
+open http://localhost:8083
 ```
 
 ### Primeiro acesso
 
 | | |
 |-|-|
-| **Frontend** | [http://localhost:4200](http://localhost:4200) |
-| **Swagger (API docs)** | [http://localhost:4200/swagger-ui/index.html](http://localhost:4200/swagger-ui/index.html) |
+| **Frontend** | [http://localhost:8083](http://localhost:8083) |
+| **Swagger (API docs)** | [http://localhost:8083/swagger-ui/index.html](http://localhost:8083/swagger-ui/index.html) |
 | **Usuário** | `admin` |
 | **Senha** | `admin123` |
 
@@ -173,8 +173,8 @@ O seeder é **idempotente** — só roda se o banco estiver vazio (sem clientes)
 
 ```mermaid
 graph LR
-    Browser -->|HTTP| Angular[Angular SPA<br/>localhost:4200]
-    Angular -->|proxy.conf.json| API[Spring Boot API<br/>:8080]
+    Browser -->|HTTP| Angular[Angular SPA<br/>localhost:8083]
+    Angular -->|proxy.conf.json| API[Spring Boot API<br/>:8082]
     API --> DB[(PostgreSQL<br/>:5432)]
     API -->|HTTP 3s timeout| ViaCEP[ViaCEP API<br/>externa]
     API -->|Scheduled| Job[Retry Job<br/>backoff exponencial]

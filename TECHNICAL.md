@@ -208,7 +208,7 @@ sequenceDiagram
 ### Profiles
 | Profile | Swagger | CORS | Cookie secure |
 |---------|---------|------|---------------|
-| dev | Público | localhost:4200 | false (HTTP) |
+| dev | Público | localhost:8083 | false (HTTP) |
 | prod (default) | Protegido | Configurável | true (HTTPS via proxy) |
 
 ---
@@ -406,16 +406,16 @@ data    → tabela Material em card com header + count badge + paginação
 ```
 ┌──────────────┐     ┌──────────────┐     ┌──────────────┐
 │  PostgreSQL   │     │  Spring Boot │     │  Angular CLI │
-│  :5432        │◄────│  :8080       │     │  :4200       │
+│  :5432        │◄────│  :8082       │     │  :8083       │
 │               │     │  (backend)   │     │  (frontend)  │
 └──────────────┘     └──────────────┘     └──┬───────────┘
                                               │ proxy.conf.json
-                                              │ /api → backend:8080
-                                              │ /actuator → backend:8080
-                                              │ /swagger-ui → backend:8080
+                                              │ /api → backend:8082
+                                              │ /actuator → backend:8082
+                                              │ /swagger-ui → backend:8082
                                               ▼
                                          Browser acessa
-                                         localhost:4200
+                                         localhost:8083
 ```
 
 ### Variáveis de ambiente (.env)

@@ -35,7 +35,7 @@ services:
       db:
         condition: service_healthy
     expose:
-      - "8080"
+      - "8082"
 
   frontend:
     build:
@@ -48,7 +48,7 @@ services:
       - ./frontend/tsconfig.app.json:/app/tsconfig.app.json
       - ./frontend/proxy.conf.json:/app/proxy.conf.json
     ports:
-      - "${PORT_FRONTEND:-4200}:4200"
+      - "${PORT_FRONTEND:-8083}:8083"
     depends_on:
       - backend
 
